@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+:root {
+  color: #0f172a;
+  background: #f8fafc;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.theme-dark {
+  color: #e2e8f0;
+  background: #020617;
+  color-scheme: dark;
+}
+
+.theme-dark body {
+  background: #020617;
+}
+
+.theme-dark :is(.bg-white) {
+  background-color: #0f172a !important;
+}
+
+.theme-dark :is(.bg-slate-50, .bg-slate-50\/70, .bg-slate-50\/80) {
+  background-color: #020617 !important;
+}
+
+.theme-dark :is(.bg-slate-100, .bg-slate-100\/70) {
+  background-color: #1e293b !important;
+}
+
+.theme-dark :is(.bg-blue-50, .bg-blue-50\/70) {
+  background-color: rgba(30, 64, 175, 0.24) !important;
+}
+
+.theme-dark :is(.bg-rose-50) {
+  background-color: rgba(136, 19, 55, 0.25) !important;
+}
+
+.theme-dark :is(.border-slate-100, .border-slate-200, .border-slate-200\/80, .border-slate-300) {
+  border-color: #1e293b !important;
+}
+
+.theme-dark :is(.border-blue-100, .border-blue-200) {
+  border-color: rgba(59, 130, 246, 0.42) !important;
+}
+
+.theme-dark :is(.text-slate-900, .text-slate-800, .text-slate-700) {
+  color: #e2e8f0 !important;
+}
+
+.theme-dark :is(.text-slate-600, .text-slate-500) {
+  color: #94a3b8 !important;
+}
+
+.theme-dark :is(.text-slate-400, .text-slate-300) {
+  color: #64748b !important;
+}
+
+.theme-dark :is(.text-blue-700, .text-blue-800) {
+  color: #93c5fd !important;
+}
+
+.theme-dark :is(.text-rose-500, .text-rose-700) {
+  color: #fda4af !important;
+}
+
+.theme-dark :is(.shadow-sm, .shadow-md, .shadow-2xl) {
+  --tw-shadow-color: rgba(0, 0, 0, 0.45) !important;
+  --tw-shadow: var(--tw-shadow-colored) !important;
+}
+
+.theme-dark :is(input, select, textarea) {
+  background-color: #111827;
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
+.theme-dark :is(input::placeholder, textarea::placeholder) {
+  color: #64748b;
+}
+
+.theme-dark :is(button:hover, .hover\:bg-slate-50:hover, .hover\:bg-slate-100:hover) {
+  background-color: #1e293b;
+}
+
+.theme-dark .ring-blue-100 {
+  --tw-ring-color: rgba(59, 130, 246, 0.32) !important;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
