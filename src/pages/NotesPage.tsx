@@ -48,6 +48,8 @@ export function NotesPage() {
   const closeEditor = useUiStore((state) => state.closeEditor)
   const [saving, setSaving] = useState(false)
   const editorPanelRef = useRef<HTMLDivElement>(null)
+  const editorHistoryRef = useRef(false)
+  const closingEditorFromHistoryRef = useRef(false)
 
   const groupsById = useMemo(() => collectGroups(groups), [groups])
   const remindersByNoteId = useMemo(() => new Map(reminders.map((reminder) => [reminder.noteId, reminder])), [reminders])
@@ -78,6 +80,32 @@ export function NotesPage() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [closeEditor, editorOpen])
+
+  useEffect(() => {
+    if (!editorOpen) {
+      if (editorHistoryRef.current && !closingEditorFromHistoryRef.current) {
+        editorHistoryRef.current = false
+        window.history.back()
+      }
+      closingEditorFromHistoryRef.current = false
+      return
+    }
+
+    if (!editorHistoryRef.current) {
+      window.history.pushState({ ...window.history.state, notesEditor: true }, '')
+      editorHistoryRef.current = true
+    }
+
+    function handlePopState() {
+      if (!editorHistoryRef.current) return
+      editorHistoryRef.current = false
+      closingEditorFromHistoryRef.current = true
+      closeEditor()
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
   }, [closeEditor, editorOpen])
 
   async function handleSave(payload: NotePayload, id?: number) {

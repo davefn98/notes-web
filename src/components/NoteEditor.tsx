@@ -314,7 +314,7 @@ function NoteEditorForm({ note, groups, tags = [], saving, reminder = null, remi
   const preview = getReminderPreview()
 
   const header = (
-    <div className="flex shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-5 py-4">
+    <div className="flex shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-5 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] lg:pt-4">
       <span className="text-sm font-semibold text-slate-700">{note ? 'Editar nota' : 'Nueva nota'}</span>
       <div className="flex-1" />
       <button type="button" onClick={onClose} aria-label="Cerrar editor" className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600">
