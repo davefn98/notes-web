@@ -1,9 +1,24 @@
+import { execSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
+const packageJson = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf-8')) as { version: string }
+const appCommit = (() => {
+  try {
+    return execSync('git rev-parse --short HEAD').toString().trim()
+  } catch {
+    return 'local'
+  }
+})()
+
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(packageJson.version),
+    __APP_COMMIT__: JSON.stringify(appCommit),
+  },
   plugins: [
     react(),
     tailwindcss(),

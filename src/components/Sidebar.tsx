@@ -485,6 +485,9 @@ export function Sidebar({ groups, selectedGroupId, ungroupedNotesCount, collapse
           </>
         )}
       </nav>
+      <div className={`shrink-0 border-t border-slate-100 px-3 py-2 text-[10px] font-semibold text-slate-400 ${collapsed ? 'text-center' : ''}`}>
+        {collapsed ? `v${__APP_VERSION__}` : `Notas v${__APP_VERSION__} · ${__APP_COMMIT__}`}
+      </div>
     </aside>
   )
 }
