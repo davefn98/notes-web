@@ -1,7 +1,7 @@
 import type { Pagination } from './api'
 
 export type NotePriority = 'low' | 'medium' | 'high' | 'urgent'
-export type NoteRecurrence = 'daily' | 'weekdays' | 'weekly' | 'monthly'
+export type NoteRecurrence = 'daily'
 
 export type Tag = {
   id: number
@@ -16,8 +16,6 @@ export type Note = {
   priority: NotePriority
   dueAt?: string | null
   completedAt?: string | null
-  recurrence?: NoteRecurrence | null
-  recurrenceEndAt?: string | null
   groupId?: number | null
   userId: number
   createdAt: string
@@ -50,8 +48,6 @@ export type NotePayload = {
   content: string
   priority: NotePriority
   dueAt?: string | null
-  recurrence?: NoteRecurrence | null
-  recurrenceEndAt?: string | null
   groupId?: number | null
   tagIds?: number[]
 }

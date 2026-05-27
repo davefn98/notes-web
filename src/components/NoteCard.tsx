@@ -1,4 +1,4 @@
-import { Bell } from 'lucide-react'
+import { Bell, CheckCircle2, Circle, Trash2, Calendar } from 'lucide-react'
 import { PrivacyText } from './PrivacyText'
 import type { Group } from '../types/group'
 import type { Note, NotePriority } from '../types/note'
@@ -13,18 +13,11 @@ type NoteCardProps = {
   onDelete: (note: Note) => void
 }
 
-const priorityBorderColor: Record<NotePriority, string> = {
-  low: '#10b981',
-  medium: '#0ea5e9',
-  high: '#f59e0b',
-  urgent: '#f43f5e',
-}
-
-const priorityLabel: Record<NotePriority, string> = {
-  low: 'baja',
-  medium: 'media',
-  high: 'alta',
-  urgent: 'urgente',
+const priorityAccent: Record<NotePriority, { color: string; label: string }> = {
+  low:    { color: '#10b981', label: 'baja' },
+  medium: { color: '#3b82f6', label: 'media' },
+  high:   { color: '#f59e0b', label: 'alta' },
+  urgent: { color: '#ef4444', label: 'urgente' },
 }
 
 function formatDate(value?: string | null) {
@@ -36,59 +29,64 @@ function isPast(value?: string | null) {
   return value ? new Date(value) < new Date() : false
 }
 
-function TrashIcon() {
-  return (
-    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-    </svg>
-  )
-}
-
 export function NoteCard({ note, groupsById, selected = false, hasReminder = false, onEdit, onToggleComplete, onDelete }: NoteCardProps) {
   const completed = Boolean(note.completedAt)
   const group = note.groupId ? groupsById.get(note.groupId) : null
   const dueDate = formatDate(note.dueAt)
   const overdue = isPast(note.dueAt) && !completed
-  const groupColor = group?.color ?? '#94a3b8'
+  const accent = priorityAccent[note.priority]
 
   return (
     <article
       data-note-card="true"
       onMouseDown={(event) => event.stopPropagation()}
       onClick={() => onEdit(note)}
-      className={`group/card cursor-pointer rounded-2xl border bg-white p-4 shadow-sm transition duration-150 ${
+      className={`group/card relative cursor-pointer overflow-hidden rounded-2xl border bg-white p-4 shadow-sm transition-all duration-200 ${
         selected
-          ? 'border-blue-200 bg-blue-50/70 shadow-blue-100/70 ring-2 ring-blue-100'
-          : 'border-slate-200/80 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md hover:shadow-slate-200/70'
-      } ${completed ? 'opacity-55' : ''}`}
+          ? 'border-blue-300 bg-blue-50/80 shadow-md shadow-blue-100/70 ring-2 ring-blue-100'
+          : completed
+            ? 'border-slate-200/80 hover:border-slate-300 hover:shadow-md'
+            : 'border-slate-200/80 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md hover:shadow-slate-200/70'
+      } ${completed ? 'opacity-60' : ''}`}
     >
-      <div className="mb-3 flex items-start gap-3">
+      <div
+        className="pointer-events-none absolute inset-y-0 left-0 w-[3px] rounded-l-2xl transition-all duration-200"
+        style={{ backgroundColor: completed ? '#94a3b8' : accent.color }}
+      />
+
+      <div className="flex items-start gap-3 pl-1.5">
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onToggleComplete(note) }}
           aria-label={completed ? 'Marcar pendiente' : 'Marcar hecha'}
-          className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition ${
+          className={`mt-0.5 shrink-0 transition duration-150 ${
             completed
-              ? 'border-slate-400 bg-slate-400'
-              : selected
-                ? 'border-blue-400 bg-white hover:border-blue-600'
-                : 'border-slate-300 bg-white hover:border-blue-500'
+              ? 'text-slate-400 hover:text-slate-500'
+              : 'text-slate-300 hover:text-blue-500'
           }`}
         >
-          {completed && (
-            <svg className="h-3 w-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-            </svg>
+          {completed ? (
+            <CheckCircle2 size={18} className="fill-slate-400 text-white" />
+          ) : (
+            <Circle size={18} />
           )}
         </button>
 
         <div className="min-w-0 flex-1">
-          <h3 className={`text-sm font-semibold leading-5 ${completed ? 'line-through text-slate-400' : selected ? 'text-blue-800' : 'text-slate-900'}`}>
+          <h3
+            className={`text-sm font-semibold leading-5 ${
+              completed ? 'line-through text-slate-400' : selected ? 'text-blue-900' : 'text-slate-900'
+            }`}
+          >
             <PrivacyText fallback="Nota privada">{note.title}</PrivacyText>
           </h3>
 
           {note.content && (
-            <p className={`mt-1 line-clamp-3 text-sm leading-6 text-slate-600 ${completed ? 'line-through' : ''}`}>
+            <p
+              className={`mt-1.5 line-clamp-3 text-sm leading-6 ${
+                completed ? 'text-slate-400' : 'text-slate-500'
+              }`}
+            >
               <PrivacyText fallback="Contenido oculto">{note.content}</PrivacyText>
             </p>
           )}
@@ -96,54 +94,68 @@ export function NoteCard({ note, groupsById, selected = false, hasReminder = fal
 
         <div className="flex shrink-0 items-center gap-2">
           {hasReminder && (
-            <Bell size={12} className="text-amber-500" />
+            <Bell size={13} className="text-amber-400" />
           )}
-          <span
-            className="h-2.5 w-2.5 rounded-full"
-            title={`Prioridad ${priorityLabel[note.priority]}`}
-            style={{ backgroundColor: priorityBorderColor[note.priority] }}
-          />
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); onDelete(note) }}
             aria-label="Eliminar nota"
-            className="rounded-lg p-1 text-slate-300 opacity-0 transition hover:bg-rose-50 hover:text-rose-500 group-hover/card:opacity-100"
+            className="rounded-lg p-1.5 text-slate-300 opacity-100 transition-all duration-150 hover:bg-rose-50 hover:text-rose-500 sm:opacity-0 sm:group-hover/card:opacity-100"
           >
-            <TrashIcon />
+            <Trash2 size={13} />
           </button>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5 pl-8">
+      <div className="mt-3 flex flex-wrap items-center gap-1.5 pl-7">
         <span
-          className="rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wide"
-          style={{ backgroundColor: `${priorityBorderColor[note.priority]}18`, color: priorityBorderColor[note.priority] }}
+          className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold tracking-wide"
+          style={{ backgroundColor: `${accent.color}14`, color: accent.color }}
         >
-          {priorityLabel[note.priority]}
+          <span
+            className="h-1.5 w-1.5 rounded-full"
+            style={{ backgroundColor: accent.color }}
+          />
+          {accent.label}
         </span>
 
         {group && (
           <span
-            className="rounded-full px-2 py-1 text-[10px] font-semibold"
-            style={{ backgroundColor: `${groupColor}20`, color: groupColor }}
+            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium"
+            style={{ backgroundColor: `${group.color ?? '#94a3b8'}18`, color: group.color ?? '#64748b' }}
           >
             <PrivacyText fallback="•••">{group.name}</PrivacyText>
           </span>
         )}
 
         {dueDate && (
-          <span className={`rounded-full px-2 py-1 text-[10px] font-semibold ${overdue ? 'bg-rose-50 text-rose-500' : 'bg-slate-100 text-slate-500'}`}>
+          <span
+            className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium ${
+              overdue
+                ? 'bg-rose-50 text-rose-600'
+                : 'bg-slate-100 text-slate-500'
+            }`}
+          >
+            <Calendar size={11} />
             {dueDate}
           </span>
         )}
 
         {note.tags && note.tags.length > 0 && (
           <>
-            {note.tags.map((tag) => (
-              <span key={tag.id} className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-medium text-slate-500">
-                #{tag.name}
+            {note.tags.slice(0, 3).map((tag) => (
+              <span
+                key={tag.id}
+                className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-500"
+              >
+                {tag.name}
               </span>
             ))}
+            {note.tags.length > 3 && (
+              <span className="rounded-lg bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-400">
+                +{note.tags.length - 3}
+              </span>
+            )}
           </>
         )}
       </div>

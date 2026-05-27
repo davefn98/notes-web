@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useUiStore } from '../store/uiStore'
 import type { Group } from '../types/group'
-import type { NotePayload, NotePriority, NoteRecurrence } from '../types/note'
+import type { NotePayload, NotePriority } from '../types/note'
 
 type QuickComposerProps = {
   groups: Group[]
@@ -20,8 +20,6 @@ export function QuickComposer({ groups, onSave }: QuickComposerProps) {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [priority, setPriority] = useState<NotePriority>('medium')
-  const [recurrence, setRecurrence] = useState<NoteRecurrence | ''>('')
-  const [recurrenceEndAt, setRecurrenceEndAt] = useState('')
   const [groupId, setGroupId] = useState('')
   const [dueAt, setDueAt] = useState('')
   const [saving, setSaving] = useState(false)
@@ -57,15 +55,11 @@ export function QuickComposer({ groups, onSave }: QuickComposerProps) {
         content: content.trim(),
         priority,
         dueAt: dueAt ? new Date(dueAt).toISOString() : null,
-        recurrence: recurrence || null,
-        recurrenceEndAt: recurrence && recurrenceEndAt ? new Date(recurrenceEndAt).toISOString() : null,
         groupId: groupId ? Number(groupId) : null,
       })
       setTitle('')
       setContent('')
       setPriority('medium')
-      setRecurrence('')
-      setRecurrenceEndAt('')
       setGroupId('')
       setDueAt('')
       setExpanded(false)
@@ -150,17 +144,6 @@ export function QuickComposer({ groups, onSave }: QuickComposerProps) {
               onChange={(e) => setDueAt(e.target.value)}
               className={selectClass}
             />
-            <select
-              value={recurrence}
-              onChange={(e) => setRecurrence(e.target.value as NoteRecurrence | '')}
-              className={selectClass}
-            >
-              <option value="">No repetir</option>
-              <option value="daily">Diario</option>
-              <option value="weekdays">Lun–Vie</option>
-              <option value="weekly">Semanal</option>
-              <option value="monthly">Mensual</option>
-            </select>
             <div className="ml-auto flex gap-1">
               <button
                 type="button"

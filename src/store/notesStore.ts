@@ -42,7 +42,7 @@ type NotesState = {
   loadGroups: () => Promise<void>
   loadNotes: () => Promise<void>
   setFilters: (filters: Partial<NoteFilters>) => void
-  saveNote: (payload: NotePayload, id?: number) => Promise<void>
+  saveNote: (payload: NotePayload, id?: number) => Promise<Note>
   toggleComplete: (note: Note) => Promise<void>
   removeNote: (id: number) => Promise<void>
   createGroup: (payload: GroupPayload) => Promise<void>
@@ -80,10 +80,10 @@ export const useNotesStore = create<NotesState>((set, get) => ({
   },
   setFilters: (filters) => set((state) => ({ filters: { ...state.filters, ...filters } })),
   saveNote: async (payload, id) => {
-    if (id) await updateNote(id, payload)
-    else await createNote(payload)
+    const data = id ? await updateNote(id, payload) : await createNote(payload)
     await get().loadNotes()
     await get().loadGroups()
+    return data.note
   },
   toggleComplete: async (note) => {
     if (note.completedAt) await uncompleteNote(note.id)

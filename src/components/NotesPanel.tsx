@@ -46,7 +46,7 @@ export function NotesPanel({
 
   return (
     <div className="space-y-2">
-      <div className="columns-1 gap-2.5 sm:columns-2 lg:columns-3 xl:columns-4 [&>*]:mb-2.5 [&>*]:break-inside-avoid">
+      <div className="columns-1 gap-3 sm:columns-2 lg:columns-3 xl:columns-4 [&>*]:mb-3 [&>*]:break-inside-avoid">
         {notes.map((note) => (
           <NoteCard
             key={note.id}

@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react'
-import { Moon, Sun } from 'lucide-react'
+import { Moon, Sun, LogOut, Menu } from 'lucide-react'
 import { InstallPrompt } from './InstallPrompt'
 import { ReminderTray } from './ReminderTray'
 import { Sidebar } from './Sidebar'
-import { PrivacyText } from './PrivacyText'
+import { AccountPanel } from './AccountPanel'
 import { useAuthStore } from '../store/authStore'
 import { useNotesStore } from '../store/notesStore'
 import { useRemindersStore } from '../store/remindersStore'
@@ -27,40 +27,42 @@ function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
         <button
           type="button"
           onClick={onMenuClick}
-          className="lg:hidden rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+          className="lg:hidden rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
           aria-label="Alternar menú"
         >
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
+          <Menu size={18} />
         </button>
-        <span className="text-sm font-bold text-slate-800">Notas</span>
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 text-xs font-black text-white shadow-sm lg:hidden">
+          N
+        </div>
+        <span className="text-sm font-bold text-slate-800 lg:hidden">Notas</span>
       </div>
 
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1">
+        <ReminderTray />
+        <div className="mx-1 h-4 w-px bg-slate-200" />
         <button
           type="button"
           onClick={toggleTheme}
-          className="rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+          className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
           aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
           title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
         >
-          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </button>
-        <ReminderTray />
         <span
-          className={`mx-1.5 h-2 w-2 rounded-full transition ${privacyMode ? 'bg-amber-400' : 'bg-slate-300'}`}
+          className={`mx-0.5 h-1.5 w-1.5 rounded-full transition-colors ${privacyMode ? 'bg-amber-400' : 'bg-slate-300'}`}
           title={privacyMode ? 'Modo privacidad activo (Ctrl+Shift+P)' : 'Ctrl+Shift+P para activar privacidad'}
         />
-        <span className="hidden text-sm text-slate-600 sm:inline">
-          <PrivacyText fallback="••••••">{user?.name ?? user?.username ?? 'Usuario'}</PrivacyText>
-        </span>
+        {user ? <AccountPanel /> : null}
         <button
           type="button"
-          onClick={logout}
-          className="rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+          onClick={() => void logout()}
+          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+          aria-label="Cerrar sesión"
+          title="Cerrar sesión"
         >
-          Salir
+          <LogOut size={15} />
         </button>
       </div>
     </header>
@@ -83,31 +85,51 @@ export function AppLayout({ children }: AppLayoutProps) {
   const setSidebarWidth = useUiStore((state) => state.setSidebarWidth)
   const togglePrivacyMode = useUiStore((state) => state.togglePrivacyMode)
   const loadReminders = useRemindersStore((state) => state.loadReminders)
+  const loadDueItems = useRemindersStore((state) => state.loadDueItems)
   const reminders = useRemindersStore((state) => state.reminders)
   const loadTags = useTagsStore((state) => state.loadTags)
-  const notifiedIds = useRef(new Set<number>())
 
+  // Initial load + 60s safety poll
   useEffect(() => {
     void loadReminders()
+    void loadDueItems()
     void loadTags()
-    const interval = window.setInterval(() => void loadReminders(), 30000)
-    return () => window.clearInterval(interval)
-  }, [loadReminders, loadTags])
 
+    const interval = window.setInterval(() => {
+      void loadDueItems()
+    }, 60_000)
+
+    return () => window.clearInterval(interval)
+  }, [loadReminders, loadDueItems, loadTags])
+
+  // Precise wakeup: fire exactly when the next reminder becomes due
   useEffect(() => {
-    const newOverdue = reminders.filter(
-      (r) => !notifiedIds.current.has(r.id) && new Date(r.remindAt) <= new Date(),
-    )
-    for (const reminder of newOverdue) {
-      notifiedIds.current.add(reminder.id)
-      if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-        const title = reminder.note?.title || 'Recordatorio'
-        const body = reminder.message || `Nota #${reminder.noteId}`
-        const n = new Notification(title, { body, icon: '/pwa-icon.svg' })
-        n.onclick = () => { window.focus(); n.close() }
-      }
+    const next = reminders
+      .filter((r) => !r.completedAt && new Date(r.remindAt) > new Date())
+      .map((r) => new Date(r.remindAt).getTime())
+      .sort((a, b) => a - b)[0]
+
+    if (!next) return
+
+    const ms = next - Date.now()
+    if (ms <= 0) return
+
+    const timeout = window.setTimeout(() => {
+      void loadDueItems()
+      void loadReminders()
+    }, ms)
+
+    return () => window.clearTimeout(timeout)
+  }, [reminders, loadDueItems, loadReminders])
+
+  // Refresh when the user returns to the tab
+  useEffect(() => {
+    function onVisibility() {
+      if (!document.hidden) void loadDueItems()
     }
-  }, [reminders])
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [loadDueItems])
 
   const dragRef = useRef<{ startX: number; startWidth: number } | null>(null)
   const cleanupRef = useRef<(() => void) | null>(null)

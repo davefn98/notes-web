@@ -5,7 +5,11 @@
       "Bash(Get-ChildItem -Recurse -Directory -Name)",
       "Bash(Select-Object -First 30)",
       "Bash(Get-ChildItem -Path \"D:\\\\Personal\\\\Proyectos\\\\Notes\\\\notes-web\" -Force)",
-      "Bash(Select-Object Name, Mode)"
+      "Bash(Select-Object Name, Mode)",
+      "WebFetch(domain:notes-api-zwbl.onrender.com)",
+      "PowerShell(Get-ChildItem -Path \"D:\\\\Personal\\\\Proyectos\\\\Notes\\\\notes-web\" -Recurse -Depth 3 -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -match \"\\(openapi|swagger|api|schema|dto|model|reminder\\)\" -and $_.FullName -notmatch \"node_modules\" } | Select-Object FullName)",
+      "PowerShell(Get-ChildItem -Path \"D:\\\\Personal\\\\Proyectos\\\\Notes\\\\notes-web\" -Directory -Depth 2 -ErrorAction SilentlyContinue | Where-Object { $_.Name -notmatch \"node_modules\" } | Select-Object Name)",
+      "Bash(npx tsc *)"
     ]
   }
 }

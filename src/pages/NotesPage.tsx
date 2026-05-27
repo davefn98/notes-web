@@ -35,8 +35,11 @@ export function NotesPage() {
   const toggleComplete = useNotesStore((state) => state.toggleComplete)
   const removeNote = useNotesStore((state) => state.removeNote)
   const reminders = useRemindersStore((state) => state.reminders)
+  const reminderRules = useRemindersStore((state) => state.rules)
   const loadReminders = useRemindersStore((state) => state.loadReminders)
+  const loadReminderRules = useRemindersStore((state) => state.loadReminderRules)
   const saveReminder = useRemindersStore((state) => state.saveReminder)
+  const saveReminderRule = useRemindersStore((state) => state.saveReminderRule)
   const removeReminder = useRemindersStore((state) => state.removeReminder)
   const tags = useTagsStore((state) => state.tags)
   const editorOpen = useUiStore((state) => state.editorOpen)
@@ -48,6 +51,7 @@ export function NotesPage() {
 
   const groupsById = useMemo(() => collectGroups(groups), [groups])
   const remindersByNoteId = useMemo(() => new Map(reminders.map((reminder) => [reminder.noteId, reminder])), [reminders])
+  const reminderRulesByNoteId = useMemo(() => new Map(reminderRules.filter((rule) => rule.active).map((rule) => [rule.noteId, rule])), [reminderRules])
   const groupedNotes = useMemo(() => getVisibleNotesForGroup(groups, filters, ungroupedNotes), [groups, filters, ungroupedNotes])
   const visibleNotes = groupedNotes?.notes ?? notes
   const visiblePagination = groupedNotes?.pagination ?? pagination
@@ -55,7 +59,8 @@ export function NotesPage() {
   useEffect(() => {
     void loadGroups()
     void loadReminders()
-  }, [loadGroups, loadReminders])
+    void loadReminderRules()
+  }, [loadGroups, loadReminderRules, loadReminders])
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -78,7 +83,7 @@ export function NotesPage() {
   async function handleSave(payload: NotePayload, id?: number) {
     setSaving(true)
     try {
-      await saveNote(payload, id)
+      return await saveNote(payload, id)
     } finally {
       setSaving(false)
     }
@@ -161,10 +166,12 @@ export function NotesPage() {
               tags={tags}
               saving={saving}
               reminder={editingNote ? (remindersByNoteId.get(editingNote.id) ?? null) : null}
+              reminderRule={editingNote ? (reminderRulesByNoteId.get(editingNote.id) ?? null) : null}
               inline
               onClose={closeEditor}
               onSave={handleSave}
               onSaveReminder={saveReminder}
+              onSaveReminderRule={saveReminderRule}
               onDeleteReminder={removeReminder}
             />
           </div>
@@ -181,9 +188,11 @@ export function NotesPage() {
           tags={tags}
           saving={saving}
           reminder={editingNote ? (remindersByNoteId.get(editingNote.id) ?? null) : null}
+          reminderRule={editingNote ? (reminderRulesByNoteId.get(editingNote.id) ?? null) : null}
           onClose={closeEditor}
           onSave={handleSave}
           onSaveReminder={saveReminder}
+          onSaveReminderRule={saveReminderRule}
           onDeleteReminder={removeReminder}
         />
       </div>
