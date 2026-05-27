@@ -313,6 +313,16 @@ function NoteEditorForm({ note, groups, tags = [], saving, reminder = null, remi
 
   const preview = getReminderPreview()
 
+  function updateDueDate(value: string) {
+    const time = dueAt.length >= 16 ? dueAt.slice(11, 16) : '09:00'
+    setDueAt(value ? `${value}T${time}` : '')
+  }
+
+  function updateDueTime(value: string) {
+    const date = dueAt.slice(0, 10)
+    setDueAt(date && value ? `${date}T${value}` : '')
+  }
+
   const header = (
     <div className="flex shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-5 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] lg:pt-4">
       <span className="text-sm font-semibold text-slate-700">{note ? 'Editar nota' : 'Nueva nota'}</span>
@@ -368,7 +378,10 @@ function NoteEditorForm({ note, groups, tags = [], saving, reminder = null, remi
               </select>
             </FieldLabel>
             <FieldLabel label="Fecha límite">
-              <input type="datetime-local" value={dueAt} onChange={(e) => setDueAt(e.target.value)} className={inputClass} />
+              <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)]">
+                <input type="date" value={dueAt.slice(0, 10)} onChange={(e) => updateDueDate(e.target.value)} className={inputClass} />
+                <input type="time" value={dueAt.length >= 16 ? dueAt.slice(11, 16) : ''} onChange={(e) => updateDueTime(e.target.value)} className={inputClass} />
+              </div>
             </FieldLabel>
           </div>
 
@@ -429,7 +442,7 @@ function NoteEditorForm({ note, groups, tags = [], saving, reminder = null, remi
           </label>
 
           {reminderEnabled && (
-            <div className="space-y-3 pl-7">
+            <div className="space-y-3 sm:pl-7">
 
               {recurrence !== 'daily' ? (
                 /* ── Recordatorio único ──────────────────────────────────── */
@@ -454,7 +467,7 @@ function NoteEditorForm({ note, groups, tags = [], saving, reminder = null, remi
                   </div>
 
                   {/* Fecha + Hora */}
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid gap-2 sm:grid-cols-2">
                     <div className="space-y-1">
                       <span className="text-[11px] font-semibold text-slate-400">Fecha</span>
                       <input
@@ -508,7 +521,7 @@ function NoteEditorForm({ note, groups, tags = [], saving, reminder = null, remi
                   </div>
 
                   {/* Hora + Zona horaria */}
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid gap-2 sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
                     <div className="space-y-1">
                       <span className="text-[11px] font-semibold text-slate-400">Hora</span>
                       <input
