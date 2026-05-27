@@ -368,7 +368,7 @@ function NoteEditorForm({ note, groups, tags = [], saving, reminder = null, remi
             Detalles
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2">
             <FieldLabel label="Prioridad">
               <select value={priority} onChange={(e) => setPriority(e.target.value as NotePriority)} className={selectClass}>
                 <option value="low">Baja</option>
@@ -378,14 +378,14 @@ function NoteEditorForm({ note, groups, tags = [], saving, reminder = null, remi
               </select>
             </FieldLabel>
             <FieldLabel label="Fecha límite">
-              <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)]">
+              <div className="grid min-w-0 gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)]">
                 <input type="date" value={dueAt.slice(0, 10)} onChange={(e) => updateDueDate(e.target.value)} className={inputClass} />
                 <input type="time" value={dueAt.length >= 16 ? dueAt.slice(11, 16) : ''} onChange={(e) => updateDueTime(e.target.value)} className={inputClass} />
               </div>
             </FieldLabel>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2">
             <FieldLabel label="Repetir">
               <select value={recurrence} onChange={(e) => setRecurrence(e.target.value as NoteRecurrence | '')} className={selectClass}>
                 <option value="">No repetir</option>
@@ -442,7 +442,7 @@ function NoteEditorForm({ note, groups, tags = [], saving, reminder = null, remi
           </label>
 
           {reminderEnabled && (
-            <div className="space-y-3 sm:pl-7">
+            <div className="space-y-3 md:pl-7">
 
               {recurrence !== 'daily' ? (
                 /* ── Recordatorio único ──────────────────────────────────── */
@@ -467,7 +467,7 @@ function NoteEditorForm({ note, groups, tags = [], saving, reminder = null, remi
                   </div>
 
                   {/* Fecha + Hora */}
-                  <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="grid gap-2 md:grid-cols-2">
                     <div className="space-y-1">
                       <span className="text-[11px] font-semibold text-slate-400">Fecha</span>
                       <input
@@ -521,7 +521,7 @@ function NoteEditorForm({ note, groups, tags = [], saving, reminder = null, remi
                   </div>
 
                   {/* Hora + Zona horaria */}
-                  <div className="grid gap-2 sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+                  <div className="grid gap-2 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
                     <div className="space-y-1">
                       <span className="text-[11px] font-semibold text-slate-400">Hora</span>
                       <input
@@ -573,7 +573,7 @@ function NoteEditorForm({ note, groups, tags = [], saving, reminder = null, remi
 
       </div>
 
-      <div className="shrink-0 border-t border-slate-200 bg-white px-5 py-3">
+      <div className="shrink-0 border-t border-slate-200 bg-white px-5 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3">
         <button
           type="submit"
           disabled={saving}
