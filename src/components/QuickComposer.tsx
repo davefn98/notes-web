@@ -12,7 +12,7 @@ function flattenGroups(groups: Group[]): Group[] {
   return groups.flatMap((g) => [g, ...flattenGroups(g.children)])
 }
 
-const selectClass = 'h-7 rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-600 outline-none focus:border-blue-500'
+const selectClass = 'h-7 min-w-0 rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-600 outline-none focus:border-blue-500'
 
 export function QuickComposer({ groups, onSave }: QuickComposerProps) {
   const privacyMode = useUiStore((state) => state.privacyMode)
@@ -142,9 +142,9 @@ export function QuickComposer({ groups, onSave }: QuickComposerProps) {
               type="datetime-local"
               value={dueAt}
               onChange={(e) => setDueAt(e.target.value)}
-              className={selectClass}
+              className={`${selectClass} w-full sm:w-auto`}
             />
-            <div className="ml-auto flex gap-1">
+            <div className="flex w-full justify-end gap-1 sm:ml-auto sm:w-auto">
               <button
                 type="button"
                 onClick={() => setExpanded(false)}

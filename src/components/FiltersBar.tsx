@@ -27,7 +27,7 @@ const priorities: Array<{ value: NotePriority | ''; label: string }> = [
   { value: 'urgent', label: 'Urgente' },
 ]
 
-const inputClass = 'h-8 rounded-lg border border-slate-200 bg-white px-2.5 text-xs outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+const inputClass = 'h-9 min-w-0 w-full rounded-lg border border-slate-200 bg-white px-2.5 text-xs outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 md:h-8'
 
 export function FiltersBar({ filters, onChange }: FiltersBarProps) {
   const privacyMode = useUiStore((state) => state.privacyMode)
@@ -39,12 +39,12 @@ export function FiltersBar({ filters, onChange }: FiltersBarProps) {
   }
 
   return (
-    <div data-toolbar="true" className="grid gap-1.5 rounded-lg border border-slate-200 bg-white p-1.5 shadow-sm md:grid-cols-[1fr_auto_auto_auto]">
+    <div data-toolbar="true" className="grid grid-cols-2 gap-1.5 rounded-lg border border-slate-200 bg-white p-1.5 shadow-sm md:grid-cols-[1fr_auto_auto_auto]">
       <input
         value={filters.search}
         onChange={(event) => onChange({ search: event.target.value, page: 1 })}
         placeholder="Buscar..."
-        className={inputClass}
+        className={`${inputClass} col-span-2 md:col-span-1`}
         style={privacyMode ? { color: 'transparent', textShadow: '0 0 6px rgba(15,23,42,0.4)', caretColor: '#0f172a' } : undefined}
       />
       <select
@@ -65,7 +65,7 @@ export function FiltersBar({ filters, onChange }: FiltersBarProps) {
           <option key={priority.value || 'all'} value={priority.value}>{priority.label}</option>
         ))}
       </select>
-      <label className={`${inputClass} flex cursor-pointer items-center gap-2 font-medium text-slate-600`}>
+      <label className={`${inputClass} col-span-2 flex cursor-pointer items-center justify-center gap-2 font-medium text-slate-600 md:col-span-1 md:justify-start`}>
         <input
           type="checkbox"
           checked={filters.hideCompleted}

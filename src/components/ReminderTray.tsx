@@ -63,6 +63,12 @@ export function ReminderTray() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [open])
 
+  useEffect(() => {
+    return () => {
+      if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current)
+    }
+  }, [])
+
   function requestNotificationPermission() {
     if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
       Notification.requestPermission()
@@ -139,7 +145,7 @@ export function ReminderTray() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-1 w-80 origin-top-right rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10">
+        <div className="absolute right-0 top-full z-50 mt-1 w-[min(20rem,calc(100vw-1rem))] origin-top-right rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10">
           <div className="border-b border-slate-100 px-3 py-2">
             <span className="text-xs font-semibold text-slate-800">Recordatorios vencidos</span>
           </div>

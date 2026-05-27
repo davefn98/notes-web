@@ -74,14 +74,14 @@ export function NoteEditor({ open, note, groups, tags = [], saving, reminder = n
 
 function FieldLabel({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label className="grid gap-1.5 text-xs font-semibold text-slate-500">
+    <label className="grid min-w-0 gap-1.5 text-xs font-semibold text-slate-500">
       <span className="px-0.5">{label}</span>
       {children}
     </label>
   )
 }
 
-const inputClass = 'rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition-all focus:border-blue-300 focus:ring-4 focus:ring-blue-50'
+const inputClass = 'min-w-0 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition-all focus:border-blue-300 focus:ring-4 focus:ring-blue-50'
 const selectClass = `${inputClass} text-slate-700`
 
 const TIMEZONE_OPTIONS = [
@@ -579,7 +579,7 @@ function NoteEditorForm({ note, groups, tags = [], saving, reminder = null, remi
 
   return (
     <div className="fixed inset-0 z-40 bg-slate-950/20 backdrop-blur-sm" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="ml-auto flex h-full w-full flex-col bg-white shadow-2xl lg:w-[440px]" onMouseDown={(e) => e.stopPropagation()}>
+      <div className="ml-auto flex h-dvh w-full flex-col bg-white shadow-2xl lg:h-full lg:w-[440px]" onMouseDown={(e) => e.stopPropagation()}>
         {header}
         {formContent}
       </div>
