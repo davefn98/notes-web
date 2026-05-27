@@ -74,7 +74,7 @@ export function NoteEditor({ open, note, groups, tags = [], saving, reminder = n
 
 function FieldLabel({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label className="grid min-w-0 max-w-full gap-1.5 overflow-x-hidden text-xs font-semibold text-slate-500">
+    <label className="grid min-w-0 max-w-full gap-1.5 text-xs font-semibold text-slate-500">
       <span className="px-0.5">{label}</span>
       {children}
     </label>
@@ -362,7 +362,7 @@ function NoteEditorForm({ note, groups, tags = [], saving, reminder = null, remi
         </label>
 
         {/* ── Detalles ──────────────────────────────────────────────────────── */}
-        <div className="max-w-full space-y-3 overflow-x-hidden rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+        <div className="max-w-full space-y-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
             <Clock size={12} />
             Detalles
