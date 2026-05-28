@@ -85,6 +85,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const setSidebarWidth = useUiStore((state) => state.setSidebarWidth)
   const togglePrivacyMode = useUiStore((state) => state.togglePrivacyMode)
   const loadReminders = useRemindersStore((state) => state.loadReminders)
+  const loadReminderOccurrences = useRemindersStore((state) => state.loadReminderOccurrences)
   const loadDueItems = useRemindersStore((state) => state.loadDueItems)
   const reminders = useRemindersStore((state) => state.reminders)
   const loadTags = useTagsStore((state) => state.loadTags)
@@ -92,6 +93,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   // Initial load + 60s safety poll
   useEffect(() => {
     void loadReminders()
+    void loadReminderOccurrences()
     void loadDueItems()
     void loadTags()
 
@@ -100,7 +102,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     }, 60_000)
 
     return () => window.clearInterval(interval)
-  }, [loadReminders, loadDueItems, loadTags])
+  }, [loadReminders, loadReminderOccurrences, loadDueItems, loadTags])
 
   // Precise wakeup: fire exactly when the next reminder becomes due
   useEffect(() => {
@@ -117,10 +119,11 @@ export function AppLayout({ children }: AppLayoutProps) {
     const timeout = window.setTimeout(() => {
       void loadDueItems()
       void loadReminders()
+      void loadReminderOccurrences()
     }, ms)
 
     return () => window.clearTimeout(timeout)
-  }, [reminders, loadDueItems, loadReminders])
+  }, [reminders, loadDueItems, loadReminderOccurrences, loadReminders])
 
   // Refresh when the user returns to the tab
   useEffect(() => {

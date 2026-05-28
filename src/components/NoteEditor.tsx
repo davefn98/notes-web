@@ -1,7 +1,11 @@
-import { useState } from 'react'
-import { X, Clock, Tag as TagIcon, Bell } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { CalendarDays, Folder, Tag as TagIcon, X } from 'lucide-react'
+import { useUiStore } from '../store/uiStore'
+import { useSchedulingForm } from '../hooks/useSchedulingForm'
+import { SchedulingFields, type SchedulingStyles } from './SchedulingFields'
+import { flattenGroups } from '../utils/scheduling'
 import type { Group } from '../types/group'
-import type { Note, NotePayload, NotePriority, NoteRecurrence } from '../types/note'
+import type { Note, NotePayload, NotePriority } from '../types/note'
 import type { Tag } from '../types/tag'
 import type { Reminder, ReminderPayload, ReminderRule, ReminderRulePayload } from '../types/reminder'
 
@@ -13,7 +17,6 @@ type NoteEditorProps = {
   saving: boolean
   reminder?: Reminder | null
   reminderRule?: ReminderRule | null
-  inline?: boolean
   onClose: () => void
   onSave: (payload: NotePayload, id?: number) => Promise<Note>
   onSaveReminder?: (payload: ReminderPayload, id?: number) => Promise<void>
@@ -21,36 +24,95 @@ type NoteEditorProps = {
   onDeleteReminder?: (id: number) => Promise<void>
 }
 
-function flattenGroups(groups: Group[]): Group[] {
-  return groups.flatMap((group) => [group, ...flattenGroups(group.children)])
+type Theme = 'light' | 'dark'
+
+function noteEditorStyles(theme: Theme) {
+  const dark = theme === 'dark'
+  const metaInput = dark
+    ? 'w-full rounded-xl border-0 bg-slate-800/70 px-3 py-2.5 text-sm text-slate-100 outline-none ring-1 ring-slate-700/60 transition placeholder:text-slate-500 focus:bg-slate-800 focus:ring-2 focus:ring-blue-500/40'
+    : 'w-full rounded-xl border-0 bg-slate-100/80 px-3 py-2.5 text-sm text-slate-800 outline-none ring-1 ring-slate-200 transition placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-blue-300'
+
+  return {
+    backdrop: dark
+      ? 'fixed inset-0 z-40 bg-slate-950/78 p-0 backdrop-blur-md sm:p-5'
+      : 'fixed inset-0 z-40 bg-slate-950/25 p-0 backdrop-blur-md sm:p-5',
+    shell: dark
+      ? 'mx-auto flex h-full w-full max-w-[900px] flex-col overflow-hidden bg-[#0f172a] shadow-2xl shadow-black/50 sm:h-[min(90vh,920px)] sm:rounded-[28px] sm:ring-1 sm:ring-white/10'
+      : 'mx-auto flex h-full w-full max-w-[900px] flex-col overflow-hidden bg-white shadow-2xl shadow-slate-950/20 sm:h-[min(90vh,920px)] sm:rounded-[28px] sm:ring-1 sm:ring-slate-200',
+    header: dark
+      ? 'flex shrink-0 items-center gap-3 border-b border-white/[0.06] bg-[#0f172a]/95 px-5 py-4 sm:px-6'
+      : 'flex shrink-0 items-center gap-3 border-b border-slate-100 bg-white px-5 py-4 sm:px-6',
+    headerKicker: dark
+      ? 'text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500'
+      : 'text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400',
+    headerTitle: dark ? 'text-sm font-bold text-slate-100' : 'text-sm font-bold text-slate-900',
+    headerHint: dark ? 'hidden text-xs text-slate-500 sm:block' : 'hidden text-xs text-slate-400 sm:block',
+    closeButton: dark
+      ? 'rounded-xl p-2 text-slate-400 transition hover:bg-white/5 hover:text-slate-100'
+      : 'rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700',
+    form: dark ? 'flex min-h-0 flex-1 flex-col bg-[#0f172a]' : 'flex min-h-0 flex-1 flex-col bg-white',
+    body: 'min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6 sm:py-6',
+    bodyGrid: 'grid gap-7 lg:grid-cols-[minmax(0,1fr)_290px]',
+    editorColumn: 'min-w-0 space-y-4',
+    sidebar: dark
+      ? 'space-y-5 border-t border-white/[0.06] pt-5 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0'
+      : 'space-y-5 border-t border-slate-100 pt-5 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0',
+    titleInput: dark
+      ? 'w-full border-0 bg-transparent px-0 py-2 text-3xl font-black leading-tight text-slate-50 outline-none placeholder:text-slate-600 focus:ring-0'
+      : 'w-full border-0 bg-transparent px-0 py-2 text-3xl font-black leading-tight text-slate-950 outline-none placeholder:text-slate-300 focus:ring-0',
+    textarea: dark
+      ? 'min-h-[300px] w-full resize-y rounded-2xl border-0 bg-slate-950/35 px-5 py-4 text-[15px] leading-8 text-slate-200 outline-none ring-1 ring-white/[0.06] transition placeholder:text-slate-600 focus:bg-slate-950/45 focus:ring-2 focus:ring-blue-500/25'
+      : 'min-h-[300px] w-full resize-y rounded-2xl border-0 bg-slate-50 px-5 py-4 text-[15px] leading-8 text-slate-700 outline-none ring-1 ring-slate-100 transition placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-blue-100',
+    fieldError: dark ? 'mt-1 text-xs font-medium text-rose-300' : 'mt-1 text-xs font-medium text-rose-600',
+    metaGroup: 'space-y-3',
+    metaHeader: dark
+      ? 'flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500'
+      : 'flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400',
+    label: dark
+      ? 'grid gap-1.5 text-xs font-semibold text-slate-400'
+      : 'grid gap-1.5 text-xs font-semibold text-slate-500',
+    labelText: 'px-0.5',
+    metaInput,
+    helper: dark ? 'text-xs leading-5 text-slate-500' : 'text-xs leading-5 text-slate-500',
+    divider: dark ? 'h-px bg-white/[0.06]' : 'h-px bg-slate-100',
+    tagChip: dark
+      ? 'rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-slate-300 transition hover:border-white/20 hover:text-slate-100'
+      : 'rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900',
+    compactRow: 'grid grid-cols-2 gap-2',
+    warning: dark
+      ? 'rounded-xl bg-amber-500/10 px-3 py-2 text-xs font-semibold leading-5 text-amber-200 ring-1 ring-amber-300/15'
+      : 'rounded-xl bg-amber-50 px-3 py-2 text-xs font-semibold leading-5 text-amber-700 ring-1 ring-amber-200',
+    inlineError: dark
+      ? 'rounded-xl bg-rose-500/10 px-3 py-2 text-xs font-semibold leading-5 text-rose-200 ring-1 ring-rose-300/15'
+      : 'rounded-xl bg-rose-50 px-3 py-2 text-xs font-semibold leading-5 text-rose-700 ring-1 ring-rose-200',
+    preview: dark
+      ? 'rounded-xl bg-slate-950/35 px-3 py-2 text-xs font-medium leading-5 text-blue-200 ring-1 ring-white/[0.06]'
+      : 'rounded-xl bg-white px-3 py-2 text-xs font-medium leading-5 text-blue-700 ring-1 ring-blue-100',
+    mutedNote: dark ? 'text-[11px] leading-4 text-slate-500' : 'text-[11px] leading-4 text-slate-500',
+    footer: dark
+      ? 'flex shrink-0 flex-col gap-2 border-t border-white/[0.06] bg-[#0f172a]/95 px-5 py-4 sm:flex-row-reverse sm:px-6'
+      : 'flex shrink-0 flex-col gap-2 border-t border-slate-100 bg-white px-5 py-4 sm:flex-row-reverse sm:px-6',
+    save: 'flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 active:scale-[.99] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto',
+    cancel: dark
+      ? 'flex w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-bold text-slate-400 transition hover:bg-white/[0.05] hover:text-slate-100 sm:w-auto'
+      : 'flex w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-bold text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 sm:w-auto',
+  }
 }
 
-// Convert an ISO string to a local YYYY-MM-DDTHH:MM string for datetime inputs
-function toInputDate(value?: string | null) {
-  if (!value) return ''
-  const date = new Date(value)
-  date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
-  return date.toISOString().slice(0, 16)
-}
-
-// Get local YYYY-MM-DD and HH:MM parts from a Date
-function toLocalParts(date: Date): { date: string; time: string } {
-  const y = date.getFullYear()
-  const mo = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  const h = String(date.getHours()).padStart(2, '0')
-  const mi = String(date.getMinutes()).padStart(2, '0')
-  return { date: `${y}-${mo}-${d}`, time: `${h}:${mi}` }
-}
-
-// Build a Date from separate YYYY-MM-DD + HH:MM local strings
-function fromParts(datePart: string, timePart: string): Date {
-  const [y, mo, d] = datePart.split('-').map(Number)
-  const [h, mi] = timePart.split(':').map(Number)
-  return new Date(y, mo - 1, d, h, mi)
-}
-
-export function NoteEditor({ open, note, groups, tags = [], saving, reminder = null, reminderRule = null, inline = false, onClose, onSave, onSaveReminder, onSaveReminderRule, onDeleteReminder }: NoteEditorProps) {
+export function NoteEditor({
+  open,
+  note,
+  groups,
+  tags = [],
+  saving,
+  reminder = null,
+  reminderRule = null,
+  onClose,
+  onSave,
+  onSaveReminder,
+  onSaveReminderRule,
+  onDeleteReminder,
+}: NoteEditorProps) {
   if (!open) return null
 
   return (
@@ -62,7 +124,6 @@ export function NoteEditor({ open, note, groups, tags = [], saving, reminder = n
       saving={saving}
       reminder={reminder}
       reminderRule={reminderRule}
-      inline={inline}
       onClose={onClose}
       onSave={onSave}
       onSaveReminder={onSaveReminder}
@@ -72,230 +133,99 @@ export function NoteEditor({ open, note, groups, tags = [], saving, reminder = n
   )
 }
 
-function FieldLabel({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="grid gap-1.5 text-xs font-semibold text-slate-500">
-      <span className="px-0.5">{label}</span>
-      {children}
-    </label>
-  )
-}
+function NoteEditorForm({
+  note,
+  groups,
+  tags = [],
+  saving,
+  reminder = null,
+  reminderRule = null,
+  onClose,
+  onSave,
+  onSaveReminder,
+  onSaveReminderRule,
+  onDeleteReminder,
+}: Omit<NoteEditorProps, 'open'>) {
+  const theme = useUiStore((state) => state.theme)
+  const styles = noteEditorStyles(theme)
+  const titleInputRef = useRef<HTMLInputElement>(null)
 
-const inputClass = 'rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition-all focus:border-blue-300 focus:ring-4 focus:ring-blue-50'
-const selectClass = `${inputClass} text-slate-700`
-
-const TIMEZONE_OPTIONS = [
-  {
-    group: 'América',
-    zones: [
-      { value: 'America/Lima', label: 'Lima (PET)' },
-      { value: 'America/Bogota', label: 'Bogotá (COT)' },
-      { value: 'America/Santiago', label: 'Santiago (CLT)' },
-      { value: 'America/Argentina/Buenos_Aires', label: 'Buenos Aires (ART)' },
-      { value: 'America/Caracas', label: 'Caracas (VET)' },
-      { value: 'America/Mexico_City', label: 'Ciudad de México (CST)' },
-      { value: 'America/New_York', label: 'Nueva York (EST)' },
-      { value: 'America/Chicago', label: 'Chicago (CST)' },
-      { value: 'America/Denver', label: 'Denver (MST)' },
-      { value: 'America/Los_Angeles', label: 'Los Ángeles (PST)' },
-      { value: 'America/Sao_Paulo', label: 'São Paulo (BRT)' },
-    ],
-  },
-  {
-    group: 'Europa',
-    zones: [
-      { value: 'Europe/Madrid', label: 'Madrid (CET)' },
-      { value: 'Europe/London', label: 'Londres (GMT)' },
-      { value: 'Europe/Paris', label: 'París (CET)' },
-      { value: 'Europe/Berlin', label: 'Berlín (CET)' },
-      { value: 'Europe/Rome', label: 'Roma (CET)' },
-      { value: 'Europe/Lisbon', label: 'Lisboa (WET)' },
-      { value: 'Europe/Moscow', label: 'Moscú (MSK)' },
-    ],
-  },
-  {
-    group: 'Asia / Pacífico',
-    zones: [
-      { value: 'Asia/Tokyo', label: 'Tokio (JST)' },
-      { value: 'Asia/Shanghai', label: 'Shanghái (CST)' },
-      { value: 'Asia/Kolkata', label: 'Calcuta (IST)' },
-      { value: 'Asia/Dubai', label: 'Dubái (GST)' },
-      { value: 'Asia/Singapore', label: 'Singapur (SGT)' },
-      { value: 'Australia/Sydney', label: 'Sídney (AEDT)' },
-      { value: 'Pacific/Auckland', label: 'Auckland (NZST)' },
-    ],
-  },
-  {
-    group: 'Otras',
-    zones: [
-      { value: 'UTC', label: 'UTC' },
-      { value: 'Africa/Cairo', label: 'El Cairo (EET)' },
-      { value: 'Africa/Lagos', label: 'Lagos (WAT)' },
-    ],
-  },
-]
-
-const DAILY_QUICK_TIMES = ['08:00', '12:00', '18:00', '21:00']
-
-function NoteEditorForm({ note, groups, tags = [], saving, reminder = null, reminderRule = null, inline = false, onClose, onSave, onSaveReminder, onSaveReminderRule, onDeleteReminder }: Omit<NoteEditorProps, 'open'>) {
   const [title, setTitle] = useState(note?.title ?? '')
   const [content, setContent] = useState(note?.content ?? '')
   const [priority, setPriority] = useState<NotePriority>(note?.priority ?? 'medium')
-  const [dueAt, setDueAt] = useState(toInputDate(note?.dueAt))
   const [groupId, setGroupId] = useState(note?.groupId ? String(note.groupId) : '')
-  const [recurrence, setRecurrence] = useState<NoteRecurrence | ''>(reminderRule?.active ? 'daily' : '')
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>(note?.tags?.map((t) => t.id) ?? [])
-  const [reminderEnabled, setReminderEnabled] = useState(Boolean(reminder || reminderRule?.active))
+  const [saveAttempted, setSaveAttempted] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
-  // One-time reminder: separate date and time
-  const initRemindAt = toInputDate(reminder?.remindAt)
-  const [remindDate, setRemindDate] = useState(initRemindAt.slice(0, 10))
-  const [remindTime, setRemindTime] = useState(initRemindAt.length >= 16 ? initRemindAt.slice(11, 16) : '')
-
-  // Daily reminder
-  const [timeOfDay, setTimeOfDay] = useState(reminderRule?.timeOfDay?.slice(0, 5) ?? '')
-  const [timezone, setTimezone] = useState(
-    reminderRule?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone
-  )
-  const [reminderMessage, setReminderMessage] = useState(reminder?.message ?? reminderRule?.message ?? '')
-  const [error, setError] = useState<string | null>(null)
+  const scheduling = useSchedulingForm({ dueAt: note?.dueAt, reminder, reminderRule })
   const groupOptions = flattenGroups(groups)
 
-  // ── Quick preset helpers ──────────────────────────────────────────────────
+  useEffect(() => {
+    if (!note) titleInputRef.current?.focus()
+  }, [note])
 
-  function applyPreset(type: '30m' | '1h' | 'afternoon' | 'tomorrow') {
-    const now = new Date()
-    let target: Date
-    switch (type) {
-      case '30m':    target = new Date(now.getTime() + 30 * 60_000); break
-      case '1h':     target = new Date(now.getTime() + 60 * 60_000); break
-      case 'afternoon':
-        target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0)
-        if (target <= now) target.setDate(target.getDate() + 1)
-        break
-      default:
-        target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 9, 0)
+  // Close on Escape regardless of which element has focus
+  useEffect(() => {
+    function onDocKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        onClose()
+      }
     }
-    const { date, time } = toLocalParts(target)
-    setReminderEnabled(true)
-    setRemindDate(date)
-    setRemindTime(time)
-  }
-
-  function setReminderBeforeDueAt(minutes: number) {
-    if (!dueAt) return
-    const [datePart, timePart] = dueAt.split('T')
-    const [y, mo, d] = datePart.split('-').map(Number)
-    const [h, mi] = timePart.split(':').map(Number)
-    const target = new Date(y, mo - 1, d, h, mi - minutes)
-    const { date, time } = toLocalParts(target)
-    setReminderEnabled(true)
-    setRemindDate(date)
-    setRemindTime(time)
-  }
-
-  // ── Preview ───────────────────────────────────────────────────────────────
-
-  function getReminderPreview(): string | null {
-    if (recurrence === 'daily') {
-      if (!timeOfDay) return null
-      const tzLabel = TIMEZONE_OPTIONS.flatMap((g) => g.zones).find((z) => z.value === timezone)?.label ?? timezone
-      return `Todos los días a las ${timeOfDay} · ${tzLabel}`
-    }
-    if (!remindDate || !remindTime) return null
-    const date = fromParts(remindDate, remindTime)
-    if (isNaN(date.getTime())) return null
-    return new Intl.DateTimeFormat('es', {
-      weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
-    }).format(date)
-  }
-
-  // ── Save ──────────────────────────────────────────────────────────────────
+    document.addEventListener('keydown', onDocKey)
+    return () => document.removeEventListener('keydown', onDocKey)
+  }, [onClose])
 
   async function saveCurrentNote() {
-    setError(null)
+    setSaveAttempted(true)
+    setSubmitError(null)
 
-    if (!title.trim() || !content.trim()) {
-      setError('Título y contenido son obligatorios.')
-      return
-    }
+    if (!title.trim() || !content.trim()) return
 
-    if (reminderEnabled) {
-      if (recurrence === 'daily') {
-        if (!timeOfDay) { setError('Selecciona la hora para el recordatorio diario.'); return }
-      } else {
-        if (!remindDate || !remindTime) { setError('Selecciona fecha y hora para el recordatorio.'); return }
-        if (fromParts(remindDate, remindTime) <= new Date()) {
-          setError('La fecha del recordatorio debe ser futura.')
-          return
-        }
+    if (scheduling.isDailyRule) {
+      if (!scheduling.timeOfDay) return
+    } else {
+      if (
+        (scheduling.dueDate || scheduling.dueTime) &&
+        (!scheduling.dueDate || !scheduling.dueTime)
+      )
+        return
+      if (scheduling.remindAtDate && scheduling.remindAtDate <= new Date()) {
+        setSubmitError('Este aviso ya está vencido. Elige una hora futura.')
+        return
       }
     }
 
-    const savedNote = await onSave(
-      {
-        title: title.trim(),
-        content: content.trim(),
-        priority,
-        dueAt: dueAt ? new Date(dueAt).toISOString() : null,
-        groupId: groupId ? Number(groupId) : null,
-        tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined,
-      },
-      note?.id,
-    )
+    try {
+      const savedNote = await onSave(
+        {
+          title: title.trim(),
+          content: content.trim(),
+          priority,
+          dueAt: scheduling.dueDateTime ? scheduling.dueDateTime.toISOString() : null,
+          groupId: groupId ? Number(groupId) : null,
+          tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined,
+        },
+        note?.id,
+      )
 
-    if (onSaveReminder || onSaveReminderRule) {
-      if (reminderEnabled && timeOfDay && recurrence === 'daily' && onSaveReminderRule) {
-        await onSaveReminderRule(
-          {
-            noteId: savedNote.id,
-            timeOfDay,
-            timezone,
-            recurrenceType: 'daily',
-            active: true,
-            message: reminderMessage.trim() || null,
-          },
-          reminderRule?.id,
+      if (onSaveReminder || onSaveReminderRule || onDeleteReminder) {
+        const { reminderPayload, rulePayload, deleteReminderId } = scheduling.buildReminderPayloads(
+          savedNote.id,
+          { reminder, reminderRule },
         )
-        if (reminder?.id && onDeleteReminder) await onDeleteReminder(reminder.id)
-
-      } else if (reminderEnabled && remindDate && remindTime && onSaveReminder) {
-        await onSaveReminder(
-          {
-            noteId: savedNote.id,
-            remindAt: fromParts(remindDate, remindTime).toISOString(),
-            message: reminderMessage.trim() || null,
-          },
-          reminder?.id,
-        )
-        if (reminderRule?.id && reminderRule.active && onSaveReminderRule) {
-          await onSaveReminderRule({
-            noteId: savedNote.id,
-            timeOfDay: reminderRule.timeOfDay,
-            timezone: reminderRule.timezone,
-            recurrenceType: 'daily',
-            active: false,
-            message: reminderRule.message ?? null,
-          }, reminderRule.id)
-        }
-
-      } else if (!reminderEnabled && reminder?.id && onDeleteReminder) {
-        await onDeleteReminder(reminder.id)
+        if (rulePayload && onSaveReminderRule)
+          await onSaveReminderRule(rulePayload.payload, rulePayload.id)
+        if (reminderPayload && onSaveReminder)
+          await onSaveReminder(reminderPayload.payload, reminderPayload.id)
+        if (deleteReminderId && onDeleteReminder) await onDeleteReminder(deleteReminderId)
       }
 
-      if (!reminderEnabled && reminderRule?.id && reminderRule.active && onSaveReminderRule) {
-        await onSaveReminderRule({
-          noteId: savedNote.id,
-          timeOfDay: reminderRule.timeOfDay,
-          timezone: reminderRule.timezone,
-          recurrenceType: 'daily',
-          active: false,
-          message: reminderRule.message ?? null,
-        }, reminderRule.id)
-      }
+      onClose()
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'No se pudo guardar la nota.')
     }
-
-    onClose()
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -304,284 +234,183 @@ function NoteEditorForm({ note, groups, tags = [], saving, reminder = null, remi
   }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLFormElement>) {
-    if (event.key === 'Escape') { event.preventDefault(); onClose(); return }
     if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
       event.preventDefault()
       if (!saving) void saveCurrentNote()
     }
   }
 
-  const preview = getReminderPreview()
+  const titleError = saveAttempted && !title.trim() ? 'El título es obligatorio.' : null
+  const contentError = saveAttempted && !content.trim() ? 'El contenido es obligatorio.' : null
 
-  const header = (
-    <div className="flex shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-5 py-4">
-      <span className="text-sm font-semibold text-slate-700">{note ? 'Editar nota' : 'Nueva nota'}</span>
-      <div className="flex-1" />
-      <button type="button" onClick={onClose} aria-label="Cerrar editor" className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600">
-        <X size={18} />
-      </button>
-    </div>
-  )
-
-  const formContent = (
-    <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="flex min-h-0 flex-1 flex-col bg-white">
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 py-4">
-
-        {error && (
-          <div className="rounded-xl bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-700">{error}</div>
-        )}
-
-        <label className="grid gap-1.5 text-xs font-semibold text-slate-500">
-          <span className="px-0.5">Título</span>
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Título de la nota"
-            className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-lg font-bold text-slate-900 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-50"
-          />
-        </label>
-
-        <label className="flex min-h-[180px] flex-1 flex-col gap-1.5 text-xs font-semibold text-slate-500">
-          <span className="px-0.5">Contenido</span>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Desarrolla la idea..."
-            className="min-h-[160px] flex-1 resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-normal leading-7 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-50"
-          />
-        </label>
-
-        {/* ── Detalles ──────────────────────────────────────────────────────── */}
-        <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-            <Clock size={12} />
-            Detalles
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <FieldLabel label="Prioridad">
-              <select value={priority} onChange={(e) => setPriority(e.target.value as NotePriority)} className={selectClass}>
-                <option value="low">Baja</option>
-                <option value="medium">Media</option>
-                <option value="high">Alta</option>
-                <option value="urgent">Urgente</option>
-              </select>
-            </FieldLabel>
-            <FieldLabel label="Fecha límite">
-              <input type="datetime-local" value={dueAt} onChange={(e) => setDueAt(e.target.value)} className={inputClass} />
-            </FieldLabel>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <FieldLabel label="Repetir">
-              <select value={recurrence} onChange={(e) => setRecurrence(e.target.value as NoteRecurrence | '')} className={selectClass}>
-                <option value="">No repetir</option>
-                <option value="daily">Diario</option>
-              </select>
-            </FieldLabel>
-          </div>
-
-          <FieldLabel label="Grupo">
-            <select value={groupId} onChange={(e) => setGroupId(e.target.value)} className={selectClass}>
-              <option value="">Sin grupo</option>
-              {groupOptions.map((g) => (
-                <option key={g.id} value={g.id}>{g.name}</option>
-              ))}
-            </select>
-          </FieldLabel>
-        </div>
-
-        {/* ── Etiquetas ─────────────────────────────────────────────────────── */}
-        {tags.length > 0 && (
-          <div className="space-y-2.5 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-              <TagIcon size={12} />
-              Etiquetas
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {tags.map((tag) => {
-                const active = selectedTagIds.includes(tag.id)
-                return (
-                  <button
-                    key={tag.id} type="button"
-                    onClick={() => setSelectedTagIds((prev) => active ? prev.filter((id) => id !== tag.id) : [...prev, tag.id])}
-                    className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${active ? 'text-white shadow-sm' : 'border border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-700'}`}
-                    style={active ? { backgroundColor: tag.color ?? '#3b82f6' } : undefined}
-                  >
-                    {tag.name}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* ── Recordatorio ──────────────────────────────────────────────────── */}
-        <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-          <label className="flex cursor-pointer items-center gap-3 text-xs font-bold text-slate-600">
-            <input
-              type="checkbox"
-              checked={reminderEnabled}
-              onChange={(e) => setReminderEnabled(e.target.checked)}
-              className="h-4 w-4 rounded border-slate-300 text-blue-600 accent-blue-600 focus:ring-blue-300"
-            />
-            Recordatorio
-          </label>
-
-          {reminderEnabled && (
-            <div className="space-y-3 pl-7">
-
-              {recurrence !== 'daily' ? (
-                /* ── Recordatorio único ──────────────────────────────────── */
-                <>
-                  {/* Accesos rápidos */}
-                  <div className="flex flex-wrap gap-1.5">
-                    {([
-                      { type: '30m', label: 'En 30 min' },
-                      { type: '1h', label: 'En 1 hora' },
-                      { type: 'afternoon', label: 'Esta tarde' },
-                      { type: 'tomorrow', label: 'Mañana 9:00' },
-                    ] as const).map(({ type, label }) => (
-                      <button
-                        key={type}
-                        type="button"
-                        onClick={() => applyPreset(type)}
-                        className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Fecha + Hora */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-1">
-                      <span className="text-[11px] font-semibold text-slate-400">Fecha</span>
-                      <input
-                        type="date"
-                        value={remindDate}
-                        onChange={(e) => setRemindDate(e.target.value)}
-                        className={`w-full ${inputClass}`}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <span className="text-[11px] font-semibold text-slate-400">Hora</span>
-                      <div className="flex gap-1.5">
-                        <input
-                          type="time"
-                          value={remindTime}
-                          onChange={(e) => setRemindTime(e.target.value)}
-                          className={`min-w-0 flex-1 ${inputClass}`}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setReminderBeforeDueAt(15)}
-                          disabled={!dueAt}
-                          title="15 min antes del vencimiento"
-                          className="shrink-0 rounded-xl border border-slate-200 bg-white px-2 py-2 text-[10px] font-semibold text-slate-500 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                          -15m
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                /* ── Recordatorio diario ─────────────────────────────────── */
-                <>
-                  {/* Accesos rápidos de hora */}
-                  <div className="flex gap-1.5">
-                    {DAILY_QUICK_TIMES.map((t) => (
-                      <button
-                        key={t}
-                        type="button"
-                        onClick={() => setTimeOfDay(t)}
-                        className={`flex-1 rounded-lg border px-2 py-1 text-[11px] font-semibold transition ${
-                          timeOfDay === t
-                            ? 'border-blue-400 bg-blue-50 text-blue-700'
-                            : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700'
-                        }`}
-                      >
-                        {t}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Hora + Zona horaria */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-1">
-                      <span className="text-[11px] font-semibold text-slate-400">Hora</span>
-                      <input
-                        type="time"
-                        value={timeOfDay}
-                        onChange={(e) => setTimeOfDay(e.target.value)}
-                        className={`w-full ${inputClass}`}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <span className="text-[11px] font-semibold text-slate-400">Zona horaria</span>
-                      <select
-                        value={timezone}
-                        onChange={(e) => setTimezone(e.target.value)}
-                        className={`w-full ${selectClass}`}
-                      >
-                        {TIMEZONE_OPTIONS.map(({ group, zones }) => (
-                          <optgroup key={group} label={group}>
-                            {zones.map(({ value, label }) => (
-                              <option key={value} value={value}>{label}</option>
-                            ))}
-                          </optgroup>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* Mensaje */}
-              <input
-                value={reminderMessage}
-                onChange={(e) => setReminderMessage(e.target.value)}
-                placeholder="Mensaje opcional"
-                className={`w-full ${inputClass} placeholder:text-slate-400`}
-              />
-
-              {/* Preview */}
-              {preview && (
-                <div className="flex items-center gap-1.5 rounded-lg bg-blue-50 px-3 py-2 text-[11px] font-medium text-blue-700">
-                  <Bell size={11} className="shrink-0" />
-                  {preview}
-                </div>
-              )}
-
-            </div>
-          )}
-        </div>
-
-      </div>
-
-      <div className="shrink-0 border-t border-slate-200 bg-white px-5 py-3">
-        <button
-          type="submit"
-          disabled={saving}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-sm shadow-blue-600/20 transition-all hover:bg-blue-700 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {saving ? 'Guardando...' : 'Guardar nota'}
-          <kbd className="rounded-md bg-blue-500/30 px-1.5 py-0.5 text-[10px] font-medium text-blue-100">Ctrl+Enter</kbd>
-        </button>
-      </div>
-    </form>
-  )
-
-  if (inline) {
-    return <>{header}{formContent}</>
+  const schedulingStyles: SchedulingStyles = {
+    label: styles.label,
+    labelText: styles.labelText,
+    input: styles.metaInput,
+    compactRow: styles.compactRow,
+    warning: styles.warning,
+    inlineError: styles.inlineError,
+    preview: styles.preview,
+    mutedNote: styles.mutedNote,
+    metaHeader: styles.metaHeader,
   }
 
   return (
-    <div className="fixed inset-0 z-40 bg-slate-950/20 backdrop-blur-sm" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="ml-auto flex h-full w-full flex-col bg-white shadow-2xl lg:w-[440px]" onMouseDown={(e) => e.stopPropagation()}>
-        {header}
-        {formContent}
+    <div
+      className={styles.backdrop}
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose()
+      }}
+    >
+      <div
+        data-editor-panel="true"
+        className={styles.shell}
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <div className={styles.header}>
+          <div>
+            <div className={styles.headerKicker}>{note ? 'Editar nota' : 'Nueva nota'}</div>
+            <div className={styles.headerTitle}>Editor</div>
+          </div>
+          <div className="flex-1" />
+          <span className={styles.headerHint}>Ctrl+Enter para guardar · Esc para cerrar</span>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Cerrar editor"
+            className={styles.closeButton}
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className={styles.form}>
+          <div className={styles.body}>
+            <div className={styles.bodyGrid}>
+              <main className={styles.editorColumn}>
+                {submitError ? <div className={styles.inlineError}>{submitError}</div> : null}
+
+                <div>
+                  <input
+                    ref={titleInputRef}
+                    value={title}
+                    onChange={(event) => setTitle(event.target.value)}
+                    placeholder="Título de la nota"
+                    className={styles.titleInput}
+                  />
+                  {titleError ? <div className={styles.fieldError}>{titleError}</div> : null}
+                </div>
+
+                <div>
+                  <textarea
+                    value={content}
+                    onChange={(event) => setContent(event.target.value)}
+                    placeholder="Escribe la nota..."
+                    className={styles.textarea}
+                  />
+                  {contentError ? <div className={styles.fieldError}>{contentError}</div> : null}
+                </div>
+
+                {tags.length > 0 ? (
+                  <div className="space-y-3">
+                    <div className={styles.metaHeader}>
+                      <TagIcon size={13} />
+                      Etiquetas
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {tags.map((tag) => {
+                        const active = selectedTagIds.includes(tag.id)
+                        return (
+                          <button
+                            key={tag.id}
+                            type="button"
+                            onClick={() =>
+                              setSelectedTagIds((prev) =>
+                                active ? prev.filter((id) => id !== tag.id) : [...prev, tag.id],
+                              )
+                            }
+                            className={`${styles.tagChip} ${active ? 'text-white shadow-sm' : ''}`}
+                            style={
+                              active
+                                ? { backgroundColor: tag.color ?? '#3b82f6', borderColor: tag.color ?? '#3b82f6' }
+                                : undefined
+                            }
+                          >
+                            {tag.name}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+              </main>
+
+              <aside className={styles.sidebar}>
+                <section className={styles.metaGroup}>
+                  <div className={styles.metaHeader}>
+                    <Folder size={13} />
+                    Organización
+                  </div>
+                  <label className={styles.label}>
+                    <span className={styles.labelText}>Prioridad</span>
+                    <select
+                      value={priority}
+                      onChange={(event) => setPriority(event.target.value as NotePriority)}
+                      className={styles.metaInput}
+                    >
+                      <option value="low">Baja</option>
+                      <option value="medium">Media</option>
+                      <option value="high">Alta</option>
+                      <option value="urgent">Urgente</option>
+                    </select>
+                  </label>
+                  <label className={styles.label}>
+                    <span className={styles.labelText}>Grupo</span>
+                    <select
+                      value={groupId}
+                      onChange={(event) => setGroupId(event.target.value)}
+                      className={styles.metaInput}
+                    >
+                      <option value="">Sin grupo</option>
+                      {groupOptions.map((group) => (
+                        <option key={group.id} value={group.id}>
+                          {group.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </section>
+
+                <div className={styles.divider} />
+
+                <section className={styles.metaGroup}>
+                  <div className={styles.metaHeader}>
+                    <CalendarDays size={13} />
+                    Programación
+                  </div>
+                  <SchedulingFields
+                    scheduling={scheduling}
+                    saveAttempted={saveAttempted}
+                    styles={schedulingStyles}
+                    showHeader={false}
+                  />
+                </section>
+              </aside>
+            </div>
+          </div>
+
+          <div className={styles.footer}>
+            <button type="submit" disabled={saving} className={styles.save}>
+              {saving ? 'Guardando...' : 'Guardar nota'}
+              <kbd className="rounded-md bg-blue-500/30 px-1.5 py-0.5 text-[10px] font-medium text-blue-100">
+                Ctrl+Enter
+              </kbd>
+            </button>
+            <button type="button" onClick={onClose} className={styles.cancel}>
+              Cancelar
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   )

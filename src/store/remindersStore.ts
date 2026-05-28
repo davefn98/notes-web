@@ -29,6 +29,7 @@ type RemindersState = {
   error: string | null
   loadReminders: (filters?: { completed?: boolean; upcoming?: boolean; noteId?: number }) => Promise<void>
   loadReminderRules: (filters?: { active?: boolean; noteId?: number }) => Promise<void>
+  loadReminderOccurrences: (filters?: { due?: boolean; noteId?: number; ruleId?: number; status?: ReminderOccurrence['status'] }) => Promise<void>
   loadDueOccurrences: () => Promise<void>
   loadDueItems: () => Promise<void>
   saveReminder: (payload: ReminderPayload, id?: number) => Promise<void>
@@ -72,6 +73,16 @@ export const useRemindersStore = create<RemindersState>((set, get) => ({
     }
   },
 
+  loadReminderOccurrences: async (filters = {}) => {
+    set({ loading: true, error: null })
+    try {
+      const data = await listReminderOccurrences(filters)
+      set({ occurrences: data.reminderOccurrences, loading: false })
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'No se pudieron cargar las ocurrencias', loading: false })
+    }
+  },
+
   loadDueOccurrences: async () => {
     set({ loading: true, error: null })
     try {
@@ -94,13 +105,13 @@ export const useRemindersStore = create<RemindersState>((set, get) => ({
   saveReminder: async (payload, id) => {
     if (id) await updateReminder(id, payload)
     else await createReminder(payload)
-    await Promise.all([get().loadReminders(), get().loadDueItems()])
+    await Promise.all([get().loadReminders(), get().loadReminderOccurrences(), get().loadDueItems()])
   },
 
   saveReminderRule: async (payload, id) => {
     if (id) await updateReminderRule(id, payload)
     else await createReminderRule(payload)
-    await get().loadReminderRules()
+    await Promise.all([get().loadReminderRules(), get().loadReminderOccurrences()])
   },
 
   removeReminderRule: async (id) => {
@@ -110,41 +121,41 @@ export const useRemindersStore = create<RemindersState>((set, get) => ({
 
   snoozeReminder: async (id, minutes) => {
     await snoozeReminderApi(id, { minutes })
-    await Promise.all([get().loadReminders(), get().loadDueItems()])
+    await Promise.all([get().loadReminders(), get().loadReminderOccurrences(), get().loadDueItems()])
   },
 
   snoozeOccurrence: async (id, minutes) => {
     await snoozeReminderOccurrenceApi(id, { minutes })
-    await get().loadDueItems()
+    await Promise.all([get().loadReminders(), get().loadReminderOccurrences(), get().loadDueItems()])
   },
 
   completeReminder: async (id) => {
     await completeReminderApi(id)
-    await Promise.all([get().loadReminders(), get().loadDueItems()])
+    await Promise.all([get().loadReminders(), get().loadReminderOccurrences(), get().loadDueItems()])
   },
 
   uncompleteReminder: async (id) => {
     await uncompleteReminderApi(id)
-    await Promise.all([get().loadReminders(), get().loadDueItems()])
+    await Promise.all([get().loadReminders(), get().loadReminderOccurrences(), get().loadDueItems()])
   },
 
   completeOccurrence: async (id) => {
     await completeReminderOccurrenceApi(id)
-    await get().loadDueItems()
+    await Promise.all([get().loadReminders(), get().loadReminderOccurrences(), get().loadDueItems()])
   },
 
   uncompleteOccurrence: async (id) => {
     await uncompleteReminderOccurrenceApi(id)
-    await get().loadDueItems()
+    await Promise.all([get().loadReminders(), get().loadReminderOccurrences(), get().loadDueItems()])
   },
 
   skipOccurrence: async (id) => {
     await skipReminderOccurrenceApi(id)
-    await get().loadDueItems()
+    await Promise.all([get().loadReminders(), get().loadReminderOccurrences(), get().loadDueItems()])
   },
 
   removeReminder: async (id) => {
     await deleteReminder(id)
-    await Promise.all([get().loadReminders(), get().loadDueItems()])
+    await Promise.all([get().loadReminders(), get().loadReminderOccurrences(), get().loadDueItems()])
   },
 }))

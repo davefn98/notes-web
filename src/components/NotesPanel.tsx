@@ -1,6 +1,7 @@
 import { NoteCard } from './NoteCard'
 import type { Group } from '../types/group'
 import type { Note } from '../types/note'
+import type { Reminder, ReminderOccurrence } from '../types/reminder'
 import type { Pagination } from '../types/api'
 
 type NotesPanelProps = {
@@ -9,7 +10,8 @@ type NotesPanelProps = {
   pagination: Pagination | null
   loading: boolean
   selectedNoteId?: number | null
-  remindersByNoteId?: Map<number, unknown>
+  remindersByNoteId?: Map<number, Reminder>
+  occurrencesByNoteId?: Map<number, ReminderOccurrence>
   onEdit: (note: Note) => void
   onToggleComplete: (note: Note) => void
   onDelete: (note: Note) => void
@@ -23,6 +25,7 @@ export function NotesPanel({
   loading,
   selectedNoteId,
   remindersByNoteId,
+  occurrencesByNoteId,
   onEdit,
   onToggleComplete,
   onDelete,
@@ -53,7 +56,7 @@ export function NotesPanel({
             note={note}
             groupsById={groupsById}
             selected={note.id === selectedNoteId}
-            hasReminder={remindersByNoteId?.has(note.id) ?? false}
+            reminderAt={occurrencesByNoteId?.get(note.id)?.currentRemindAt ?? remindersByNoteId?.get(note.id)?.remindAt ?? null}
             onEdit={onEdit}
             onToggleComplete={onToggleComplete}
             onDelete={onDelete}

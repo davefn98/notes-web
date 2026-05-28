@@ -245,15 +245,17 @@ export async function fetchDueItems(): Promise<DueReminderItem[]> {
       status: 'pending',
     }))
 
-  const fromOccurrences: DueReminderItem[] = occurrencesData.reminderOccurrences.map((o) => ({
-    source: 'occurrence' as const,
-    id: o.id,
-    noteId: o.noteId,
-    title: o.note?.title ?? `Nota #${o.noteId}`,
-    message: null,
-    currentRemindAt: o.currentRemindAt,
-    status: o.status,
-  }))
+  const fromOccurrences: DueReminderItem[] = occurrencesData.reminderOccurrences
+    .filter((o) => ['pending', 'snoozed'].includes(o.status) && new Date(o.currentRemindAt) <= now)
+    .map((o) => ({
+      source: 'occurrence' as const,
+      id: o.id,
+      noteId: o.noteId,
+      title: o.note?.title ?? `Nota #${o.noteId}`,
+      message: null,
+      currentRemindAt: o.currentRemindAt,
+      status: o.status,
+    }))
 
   const seen = new Set<string>()
   const items: DueReminderItem[] = []
@@ -264,5 +266,5 @@ export async function fetchDueItems(): Promise<DueReminderItem[]> {
       items.push(item)
     }
   }
-  return items
+  return items.sort((a, b) => new Date(a.currentRemindAt).getTime() - new Date(b.currentRemindAt).getTime())
 }

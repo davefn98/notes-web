@@ -7,7 +7,7 @@ type NoteCardProps = {
   note: Note
   groupsById: Map<number, Group>
   selected?: boolean
-  hasReminder?: boolean
+  reminderAt?: string | null
   onEdit: (note: Note) => void
   onToggleComplete: (note: Note) => void
   onDelete: (note: Note) => void
@@ -29,12 +29,28 @@ function isPast(value?: string | null) {
   return value ? new Date(value) < new Date() : false
 }
 
-export function NoteCard({ note, groupsById, selected = false, hasReminder = false, onEdit, onToggleComplete, onDelete }: NoteCardProps) {
+function formatReminderStatus(value?: string | null) {
+  if (!value) return null
+
+  const target = new Date(value).getTime()
+  const diff = target - new Date().getTime()
+  const absDiff = Math.abs(diff)
+
+  if (absDiff < 60000) return { label: 'Ahora', due: diff <= 0 }
+  if (absDiff < 3600000) return { label: diff < 0 ? `Hace ${Math.ceil(absDiff / 60000)} min` : `En ${Math.ceil(diff / 60000)} min`, due: diff < 0 }
+  if (absDiff < 86400000 && diff > 0) return { label: new Intl.DateTimeFormat('es', { hour: '2-digit', minute: '2-digit' }).format(target), due: false }
+  if (absDiff < 86400000) return { label: `Hace ${Math.ceil(absDiff / 3600000)}h`, due: true }
+
+  return { label: new Intl.DateTimeFormat('es', { dateStyle: 'short', timeStyle: 'short' }).format(target), due: diff < 0 }
+}
+
+export function NoteCard({ note, groupsById, selected = false, reminderAt = null, onEdit, onToggleComplete, onDelete }: NoteCardProps) {
   const completed = Boolean(note.completedAt)
   const group = note.groupId ? groupsById.get(note.groupId) : null
   const dueDate = formatDate(note.dueAt)
   const overdue = isPast(note.dueAt) && !completed
   const accent = priorityAccent[note.priority]
+  const reminderStatus = formatReminderStatus(reminderAt)
 
   return (
     <article
@@ -93,8 +109,16 @@ export function NoteCard({ note, groupsById, selected = false, hasReminder = fal
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          {hasReminder && (
-            <Bell size={13} className="text-amber-400" />
+          {reminderStatus && (
+            <span
+              className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold ${
+                reminderStatus.due ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600'
+              }`}
+              title={`Recordatorio: ${formatDate(reminderAt) ?? reminderStatus.label}`}
+            >
+              <Bell size={11} />
+              {reminderStatus.label}
+            </span>
           )}
           <button
             type="button"

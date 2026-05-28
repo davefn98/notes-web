@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { AppLayout } from '../components/AppLayout'
 import { FiltersBar } from '../components/FiltersBar'
 import { NoteEditor } from '../components/NoteEditor'
@@ -35,8 +35,10 @@ export function NotesPage() {
   const toggleComplete = useNotesStore((state) => state.toggleComplete)
   const removeNote = useNotesStore((state) => state.removeNote)
   const reminders = useRemindersStore((state) => state.reminders)
+  const occurrences = useRemindersStore((state) => state.occurrences)
   const reminderRules = useRemindersStore((state) => state.rules)
   const loadReminders = useRemindersStore((state) => state.loadReminders)
+  const loadReminderOccurrences = useRemindersStore((state) => state.loadReminderOccurrences)
   const loadReminderRules = useRemindersStore((state) => state.loadReminderRules)
   const saveReminder = useRemindersStore((state) => state.saveReminder)
   const saveReminderRule = useRemindersStore((state) => state.saveReminderRule)
@@ -47,10 +49,14 @@ export function NotesPage() {
   const openEditor = useUiStore((state) => state.openEditor)
   const closeEditor = useUiStore((state) => state.closeEditor)
   const [saving, setSaving] = useState(false)
-  const editorPanelRef = useRef<HTMLDivElement>(null)
 
   const groupsById = useMemo(() => collectGroups(groups), [groups])
-  const remindersByNoteId = useMemo(() => new Map(reminders.map((reminder) => [reminder.noteId, reminder])), [reminders])
+  const remindersByNoteId = useMemo(() => new Map(reminders.filter((reminder) => !reminder.completedAt).map((reminder) => [reminder.noteId, reminder])), [reminders])
+  const occurrencesByNoteId = useMemo(() => new Map(
+    occurrences
+      .filter((occurrence) => ['pending', 'snoozed'].includes(occurrence.status))
+      .map((occurrence) => [occurrence.noteId, occurrence]),
+  ), [occurrences])
   const reminderRulesByNoteId = useMemo(() => new Map(reminderRules.filter((rule) => rule.active).map((rule) => [rule.noteId, rule])), [reminderRules])
   const groupedNotes = useMemo(() => getVisibleNotesForGroup(groups, filters, ungroupedNotes), [groups, filters, ungroupedNotes])
   const visibleNotes = groupedNotes?.notes ?? notes
@@ -59,8 +65,9 @@ export function NotesPage() {
   useEffect(() => {
     void loadGroups()
     void loadReminders()
+    void loadReminderOccurrences()
     void loadReminderRules()
-  }, [loadGroups, loadReminderRules, loadReminders])
+  }, [loadGroups, loadReminderOccurrences, loadReminderRules, loadReminders])
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -68,17 +75,6 @@ export function NotesPage() {
     }, filters.search ? 300 : 0)
     return () => window.clearTimeout(timeout)
   }, [filters, loadNotes])
-
-  useEffect(() => {
-    if (!editorOpen) return
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') closeEditor()
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [closeEditor, editorOpen])
 
   async function handleSave(payload: NotePayload, id?: number) {
     setSaving(true)
@@ -90,7 +86,7 @@ export function NotesPage() {
   }
 
   async function handleQuickSave(payload: NotePayload) {
-    await saveNote(payload)
+    return saveNote(payload)
   }
 
   async function handleDelete(note: Note) {
@@ -111,7 +107,6 @@ export function NotesPage() {
     if (!editorOpen) return
 
     const target = event.target as HTMLElement
-    if (editorPanelRef.current?.contains(target)) return
     if (target.closest('[data-editor-panel]')) return
     if (target.closest('[data-note-card]')) return
     if (target.closest('[data-toolbar]')) return
@@ -127,12 +122,18 @@ export function NotesPage() {
 
         {/* List column */}
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-          <div data-toolbar="true" className="shrink-0 border-b border-slate-100 bg-slate-50 px-3 py-1.5">
+          <div data-toolbar="true" className="shrink-0">
             <FiltersBar filters={filters} onChange={setFilters} />
           </div>
           <div className="flex-1 overflow-y-auto">
             <div className="space-y-2 px-3 py-2.5">
-              <QuickComposer groups={groups} onSave={handleQuickSave} />
+              <QuickComposer
+                groups={groups}
+                tags={tags}
+                onSave={handleQuickSave}
+                onSaveReminder={saveReminder}
+                onSaveReminderRule={saveReminderRule}
+              />
               {error ? (
                 <div className="rounded-xl bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">{error}</div>
               ) : null}
@@ -143,6 +144,7 @@ export function NotesPage() {
                 loading={loading}
                 selectedNoteId={editorOpen ? (editingNote?.id ?? null) : null}
                 remindersByNoteId={remindersByNoteId}
+                occurrencesByNoteId={occurrencesByNoteId}
                 onEdit={handleSelectNote}
                 onToggleComplete={toggleComplete}
                 onDelete={handleDelete}
@@ -152,50 +154,22 @@ export function NotesPage() {
           </div>
         </div>
 
-        {/* Desktop slideover editor */}
-        <div
-          className={`pointer-events-none absolute inset-y-0 right-0 z-20 hidden w-[min(420px,calc(100vw-96px))] transform-gpu transition-transform duration-200 ease-out lg:block ${
-            editorOpen ? 'translate-x-0' : 'translate-x-full'
-          }`}
-        >
-          <div ref={editorPanelRef} data-editor-panel="true" className="pointer-events-auto flex h-full flex-col border-l border-slate-200 bg-white shadow-2xl shadow-slate-900/10">
-            <NoteEditor
-              open={editorOpen}
-              note={editingNote}
-              groups={groups}
-              tags={tags}
-              saving={saving}
-              reminder={editingNote ? (remindersByNoteId.get(editingNote.id) ?? null) : null}
-              reminderRule={editingNote ? (reminderRulesByNoteId.get(editingNote.id) ?? null) : null}
-              inline
-              onClose={closeEditor}
-              onSave={handleSave}
-              onSaveReminder={saveReminder}
-              onSaveReminderRule={saveReminderRule}
-              onDeleteReminder={removeReminder}
-            />
-          </div>
-        </div>
-
       </div>
 
-      {/* Mobile modal editor */}
-      <div className="lg:hidden">
-        <NoteEditor
-          open={editorOpen}
-          note={editingNote}
-          groups={groups}
-          tags={tags}
-          saving={saving}
-          reminder={editingNote ? (remindersByNoteId.get(editingNote.id) ?? null) : null}
-          reminderRule={editingNote ? (reminderRulesByNoteId.get(editingNote.id) ?? null) : null}
-          onClose={closeEditor}
-          onSave={handleSave}
-          onSaveReminder={saveReminder}
-          onSaveReminderRule={saveReminderRule}
-          onDeleteReminder={removeReminder}
-        />
-      </div>
+      <NoteEditor
+        open={editorOpen}
+        note={editingNote}
+        groups={groups}
+        tags={tags}
+        saving={saving}
+        reminder={editingNote ? (remindersByNoteId.get(editingNote.id) ?? null) : null}
+        reminderRule={editingNote ? (reminderRulesByNoteId.get(editingNote.id) ?? null) : null}
+        onClose={closeEditor}
+        onSave={handleSave}
+        onSaveReminder={saveReminder}
+        onSaveReminderRule={saveReminderRule}
+        onDeleteReminder={removeReminder}
+      />
     </AppLayout>
   )
 }
