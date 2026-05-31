@@ -50,8 +50,13 @@
 body {
   min-width: 320px;
   min-height: 100vh;
+  min-height: 100dvh;
   margin: 0;
   background: #f8fafc;
+}
+
+#root {
+  min-height: 100dvh;
 }
 
 :is(input, select, textarea)::placeholder {

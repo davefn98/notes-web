@@ -6,3 +6,6 @@ interface BeforeInstallPromptEvent extends Event {
   readonly userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>
   prompt(): Promise<void>
 }
+
+declare const __APP_VERSION__: string
+declare const __APP_COMMIT__: string

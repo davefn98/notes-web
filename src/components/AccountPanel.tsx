@@ -12,10 +12,10 @@ function formatDate(value?: string | null) {
 function sessionLabel(session: RefreshSession) {
   const agent = session.userAgent?.trim()
   if (!agent) return 'Dispositivo desconocido'
+  if (agent.includes('Edg')) return 'Edge'
   if (agent.includes('Chrome')) return 'Chrome'
   if (agent.includes('Firefox')) return 'Firefox'
   if (agent.includes('Safari')) return 'Safari'
-  if (agent.includes('Edg')) return 'Edge'
   return agent.slice(0, 48)
 }
 

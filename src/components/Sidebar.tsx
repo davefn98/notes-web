@@ -178,7 +178,7 @@ function GroupNode({
             )}
           </button>
 
-          {!sidebarCollapsed && <div className="invisible flex shrink-0 gap-0.5 group-hover/node:visible">
+          {!sidebarCollapsed && <div className="flex shrink-0 gap-0.5 lg:invisible lg:group-hover/node:visible lg:group-focus-within/node:visible">
             <button
               type="button"
               title="Agregar subgrupo"
@@ -460,7 +460,7 @@ export function Sidebar({ groups, selectedGroupId, ungroupedNotesCount, collapse
                       <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: tag.color ?? '#94a3b8' }} />
                       <PrivacyText fallback="Etiqueta">{tag.name}</PrivacyText>
                     </button>
-                    <div className="invisible flex shrink-0 gap-0.5 group-hover/tag:visible">
+                    <div className="flex shrink-0 gap-0.5 lg:invisible lg:group-hover/tag:visible lg:group-focus-within/tag:visible">
                       <button
                         type="button"
                         title="Editar"
@@ -485,6 +485,9 @@ export function Sidebar({ groups, selectedGroupId, ungroupedNotesCount, collapse
           </>
         )}
       </nav>
+      <div className={`shrink-0 border-t border-slate-100 px-3 py-2 text-[10px] font-semibold text-slate-400 ${collapsed ? 'text-center' : ''}`}>
+        {collapsed ? `v${__APP_VERSION__}` : `Notas v${__APP_VERSION__} · ${__APP_COMMIT__}`}
+      </div>
     </aside>
   )
 }

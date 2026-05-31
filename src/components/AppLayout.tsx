@@ -22,7 +22,7 @@ function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
   const toggleTheme = useUiStore((state) => state.toggleTheme)
 
   return (
-    <header className="flex h-12 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4">
+    <header className="flex h-[calc(3rem+env(safe-area-inset-top))] shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 pt-[env(safe-area-inset-top)]">
       <div className="flex items-center gap-3">
         <button
           type="button"
@@ -81,7 +81,6 @@ export function AppLayout({ children }: AppLayoutProps) {
   const privacyMode = useUiStore((state) => state.privacyMode)
   const openSidebar = useUiStore((state) => state.openSidebar)
   const closeSidebar = useUiStore((state) => state.closeSidebar)
-  const toggleSidebarCollapsed = useUiStore((state) => state.toggleSidebarCollapsed)
   const setSidebarWidth = useUiStore((state) => state.setSidebarWidth)
   const togglePrivacyMode = useUiStore((state) => state.togglePrivacyMode)
   const loadReminders = useRemindersStore((state) => state.loadReminders)
@@ -212,7 +211,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const desktopSidebarWidth = sidebarCollapsed ? 72 : sidebarWidth
 
   return (
-    <div className="h-screen overflow-hidden bg-slate-50 text-slate-900">
+    <div className="h-dvh overflow-hidden bg-slate-50 text-slate-900">
       {/* Mobile overlay sidebar */}
       <div className={`fixed inset-0 z-30 transition lg:hidden ${sidebarOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'}`}>
         <button
@@ -243,7 +242,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
         {/* Main content */}
         <div className="flex h-full min-w-0 flex-col">
-          <Topbar onMenuClick={toggleSidebarCollapsed} />
+          <Topbar onMenuClick={openSidebar} />
           <div className="shrink-0 px-3 py-1.5">
             <InstallPrompt />
           </div>

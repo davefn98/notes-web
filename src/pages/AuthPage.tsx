@@ -16,7 +16,7 @@ export function AuthPage() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (mode === 'login') await login({ username, password })
-    else await register({ name, username, password, email: email.trim() })
+    else await register({ name: name.trim(), username: username.trim(), password, email: email.trim() })
   }
 
   return (
