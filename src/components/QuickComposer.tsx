@@ -158,6 +158,10 @@ function composerStyles(dark: boolean) {
       ? 'w-full border-0 bg-transparent text-[15px] font-semibold text-slate-50 outline-none placeholder:text-slate-500 focus:ring-0'
       : 'w-full border-0 bg-transparent text-[15px] font-semibold text-slate-900 outline-none placeholder:text-slate-400 focus:ring-0',
     titleError: dark ? 'mt-0.5 text-xs font-medium text-rose-300' : 'mt-0.5 text-xs font-medium text-rose-600',
+    contentInput: dark
+      ? 'w-full resize-none overflow-hidden border-0 bg-transparent text-sm text-slate-300 outline-none placeholder:text-slate-600 focus:ring-0'
+      : 'w-full resize-none overflow-hidden border-0 bg-transparent text-sm text-slate-600 outline-none placeholder:text-slate-400 focus:ring-0',
+    divider: dark ? 'my-2 border-t border-white/[0.06]' : 'my-2 border-t border-slate-100',
     row2: 'mt-2 flex flex-wrap items-center gap-1.5',
     chip,
     saveBtn:
@@ -181,6 +185,7 @@ export function QuickComposer({ groups, tags, onSave, onSaveReminder, onSaveRemi
 
   const [expanded, setExpanded] = useState(false)
   const [title, setTitle] = useState('')
+  const [content, setContent] = useState('')
   const [priority, setPriority] = useState<NotePriority>('medium')
   const [groupId, setGroupId] = useState('')
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([])
@@ -191,6 +196,7 @@ export function QuickComposer({ groups, tags, onSave, onSaveReminder, onSaveRemi
   const scheduling = useSchedulingForm()
   const containerRef = useRef<HTMLDivElement>(null)
   const titleRef = useRef<HTMLInputElement>(null)
+  const contentRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     if (!expanded) return
@@ -211,6 +217,8 @@ export function QuickComposer({ groups, tags, onSave, onSaveReminder, onSaveRemi
   function collapse() {
     setExpanded(false)
     setTitle('')
+    setContent('')
+    if (contentRef.current) contentRef.current.style.height = 'auto'
     setPriority('medium')
     setGroupId('')
     setSelectedTagIds([])
@@ -240,7 +248,7 @@ export function QuickComposer({ groups, tags, onSave, onSaveReminder, onSaveRemi
     try {
       const note = await onSave({
         title: title.trim(),
-        content: '',
+        content: content.trim() || '',
         priority,
         dueAt: scheduling.dueDateTime ? scheduling.dueDateTime.toISOString() : null,
         groupId: groupId ? Number(groupId) : null,
@@ -313,8 +321,26 @@ export function QuickComposer({ groups, tags, onSave, onSaveReminder, onSaveRemi
               <p className={s.titleError}>El título es obligatorio.</p>
             ) : null}
 
-            {/* Row 2 — All metadata chips + save */}
-            <div className={s.row2}>
+            {/* Row 2 — Content */}
+            <hr className={s.divider} />
+            <textarea
+              ref={contentRef}
+              value={content}
+              rows={1}
+              onChange={(e) => {
+                setContent(e.target.value)
+                const el = e.target
+                el.style.height = 'auto'
+                el.style.height = `${el.scrollHeight}px`
+              }}
+              placeholder="Contenido opcional..."
+              className={s.contentInput}
+              style={{ minHeight: '1.5rem', maxHeight: '8rem' }}
+            />
+
+            {/* Row 3 — All metadata chips + save */}
+            <hr className={s.divider} />
+            <div className={`${s.row2} mt-0`}>
               {/* Priority */}
               <select
                 value={priority}
