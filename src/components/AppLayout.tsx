@@ -22,43 +22,50 @@ function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
   const toggleTheme = useUiStore((state) => state.toggleTheme)
 
   return (
-    <header className="flex h-[calc(3rem+env(safe-area-inset-top))] shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 pt-[env(safe-area-inset-top)]">
+    <header className="flex h-[calc(3rem+env(safe-area-inset-top))] shrink-0 items-center justify-between border-b border-slate-200 bg-white/80 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-md dark:border-white/[0.05] dark:bg-void/80">
       <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={onMenuClick}
-          className="lg:hidden rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
+          className="lg:hidden rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:text-cyan-400 dark:hover:bg-white/5"
           aria-label="Alternar menú"
         >
           <Menu size={18} />
         </button>
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 text-xs font-black text-white shadow-sm lg:hidden">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 text-xs font-black text-white shadow-sm lg:hidden shadow-cyan-500/20">
           N
         </div>
-        <span className="text-sm font-bold text-slate-800 lg:hidden">Notas</span>
+        <span className="text-sm font-bold text-slate-800 lg:hidden flex items-center gap-1.5 dark:text-cyan-400 font-sans">
+          Neural Notes
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse-cyan" />
+        </span>
+        <div className="hidden lg:flex items-center gap-2 font-mono text-xs text-slate-400 dark:text-cyan-400/80">
+          <span className="inline-block h-2 w-2 rounded-full bg-cyan-400 animate-pulse-cyan" />
+          <span>JARVIS V4.2 // ONLINE</span>
+        </div>
       </div>
 
       <div className="flex items-center gap-1">
         <ReminderTray />
-        <div className="mx-1 h-4 w-px bg-slate-200" />
+        <div className="mx-1 h-4 w-px bg-slate-200 dark:bg-white/10" />
         <button
           type="button"
           onClick={toggleTheme}
-          className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
+          className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:text-cyan-400 dark:hover:bg-white/5"
           aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
           title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
         >
-          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+          {theme === 'dark' ? <Sun size={16} className="text-cyan-400" /> : <Moon size={16} />}
         </button>
         <span
-          className={`mx-0.5 h-1.5 w-1.5 rounded-full transition-colors ${privacyMode ? 'bg-amber-400' : 'bg-slate-300'}`}
+          className={`mx-0.5 h-1.5 w-1.5 rounded-full transition-colors ${privacyMode ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]' : 'bg-slate-300 dark:bg-white/20'}`}
           title={privacyMode ? 'Modo privacidad activo (Ctrl+Shift+P)' : 'Ctrl+Shift+P para activar privacidad'}
         />
         {user ? <AccountPanel /> : null}
         <button
           type="button"
           onClick={() => void logout()}
-          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:text-rose-400 dark:hover:bg-white/5"
           aria-label="Cerrar sesión"
           title="Cerrar sesión"
         >
@@ -236,7 +243,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
         {/* Drag resize handle */}
         <div
-          className={`transition-colors ${sidebarCollapsed ? 'pointer-events-none opacity-0' : 'cursor-col-resize'} ${theme === 'dark' ? 'bg-slate-800 hover:bg-blue-500/40' : 'bg-slate-200 hover:bg-blue-400'}`}
+          className={`transition-colors ${sidebarCollapsed ? 'pointer-events-none opacity-0' : 'cursor-col-resize'} ${theme === 'dark' ? 'bg-slate-800 hover:bg-cyan-500/40' : 'bg-slate-200 hover:bg-blue-400'}`}
           onMouseDown={sidebarCollapsed ? undefined : handleResizeStart}
         />
 

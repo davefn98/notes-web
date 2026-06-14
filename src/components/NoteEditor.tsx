@@ -29,70 +29,72 @@ type Theme = 'light' | 'dark'
 function noteEditorStyles(theme: Theme) {
   const dark = theme === 'dark'
   const metaInput = dark
-    ? 'w-full rounded-xl border-0 bg-slate-800/70 px-3 py-2.5 text-sm text-slate-100 outline-none ring-1 ring-slate-700/60 transition placeholder:text-slate-500 focus:bg-slate-800 focus:ring-2 focus:ring-blue-500/40'
+    ? 'w-full rounded-xl border-0 bg-obsidian-light px-3 py-2.5 text-sm text-slate-100 outline-none ring-1 ring-white/10 transition placeholder:text-slate-500 focus:bg-obsidian-light focus:ring-2 focus:ring-cyan-500/40 font-sans'
     : 'w-full rounded-xl border-0 bg-slate-100/80 px-3 py-2.5 text-sm text-slate-800 outline-none ring-1 ring-slate-200 transition placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-blue-300'
 
   return {
     backdrop: dark
-      ? 'fixed inset-0 z-40 bg-slate-950/78 p-0 backdrop-blur-md sm:p-5'
+      ? 'fixed inset-0 z-40 bg-void/90 p-0 backdrop-blur-md sm:p-5'
       : 'fixed inset-0 z-40 bg-slate-950/25 p-0 backdrop-blur-md sm:p-5',
     shell: dark
-      ? 'mx-auto flex h-full w-full max-w-[900px] flex-col overflow-hidden bg-[#0f172a] shadow-2xl shadow-black/50 sm:h-[min(90vh,920px)] sm:rounded-[28px] sm:ring-1 sm:ring-white/10'
+      ? 'mx-auto flex h-full w-full max-w-[900px] flex-col overflow-hidden bg-obsidian shadow-2xl shadow-black/80 sm:h-[min(90vh,920px)] sm:rounded-[28px] sm:ring-1 sm:ring-white/[0.05]'
       : 'mx-auto flex h-full w-full max-w-[900px] flex-col overflow-hidden bg-white shadow-2xl shadow-slate-950/20 sm:h-[min(90vh,920px)] sm:rounded-[28px] sm:ring-1 sm:ring-slate-200',
     header: dark
-      ? 'flex shrink-0 items-center gap-3 border-b border-white/[0.06] bg-[#0f172a]/95 px-5 py-4 sm:px-6'
+      ? 'flex shrink-0 items-center gap-3 border-b border-white/[0.05] bg-obsidian px-5 py-4 sm:px-6'
       : 'flex shrink-0 items-center gap-3 border-b border-slate-100 bg-white px-5 py-4 sm:px-6',
     headerKicker: dark
-      ? 'text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500'
+      ? 'text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-400 font-mono'
       : 'text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400',
     headerTitle: dark ? 'text-sm font-bold text-slate-100' : 'text-sm font-bold text-slate-900',
-    headerHint: dark ? 'hidden text-xs text-slate-500 sm:block' : 'hidden text-xs text-slate-400 sm:block',
+    headerHint: dark ? 'hidden text-xs text-slate-500 sm:block font-mono' : 'hidden text-xs text-slate-400 sm:block',
     closeButton: dark
-      ? 'rounded-xl p-2 text-slate-400 transition hover:bg-white/5 hover:text-slate-100'
+      ? 'rounded-xl p-2 text-slate-400 transition hover:bg-white/5 hover:text-cyan-400'
       : 'rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700',
-    form: dark ? 'flex min-h-0 flex-1 flex-col bg-[#0f172a]' : 'flex min-h-0 flex-1 flex-col bg-white',
+    form: dark ? 'flex min-h-0 flex-1 flex-col bg-obsidian' : 'flex min-h-0 flex-1 flex-col bg-white',
     body: 'min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6 sm:py-6',
     bodyGrid: 'grid gap-7 lg:grid-cols-[minmax(0,1fr)_290px]',
     editorColumn: 'min-w-0 space-y-4',
     sidebar: dark
-      ? 'space-y-5 border-t border-white/[0.06] pt-5 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0'
+      ? 'space-y-5 border-t border-white/[0.05] pt-5 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0'
       : 'space-y-5 border-t border-slate-100 pt-5 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0',
     titleInput: dark
-      ? 'w-full border-0 bg-transparent px-0 py-2 text-3xl font-black leading-tight text-slate-50 outline-none placeholder:text-slate-600 focus:ring-0'
+      ? 'w-full border-0 bg-transparent px-0 py-2 text-3xl font-black leading-tight text-slate-50 outline-none placeholder:text-slate-700 focus:ring-0 font-sans'
       : 'w-full border-0 bg-transparent px-0 py-2 text-3xl font-black leading-tight text-slate-950 outline-none placeholder:text-slate-300 focus:ring-0',
     textarea: dark
-      ? 'min-h-[300px] w-full resize-y rounded-2xl border-0 bg-slate-950/35 px-5 py-4 text-[15px] leading-8 text-slate-200 outline-none ring-1 ring-white/[0.06] transition placeholder:text-slate-600 focus:bg-slate-950/45 focus:ring-2 focus:ring-blue-500/25'
+      ? 'min-h-[300px] w-full resize-y rounded-2xl border-0 bg-void px-5 py-4 text-[15px] leading-8 text-slate-200 outline-none ring-1 ring-white/[0.05] transition placeholder:text-slate-700 focus:bg-void focus:ring-2 focus:ring-cyan-500/25 font-sans'
       : 'min-h-[300px] w-full resize-y rounded-2xl border-0 bg-slate-50 px-5 py-4 text-[15px] leading-8 text-slate-700 outline-none ring-1 ring-slate-100 transition placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-blue-100',
-    fieldError: dark ? 'mt-1 text-xs font-medium text-rose-300' : 'mt-1 text-xs font-medium text-rose-600',
+    fieldError: dark ? 'mt-1 text-xs font-medium text-rose-400' : 'mt-1 text-xs font-medium text-rose-600',
     metaGroup: 'space-y-3',
     metaHeader: dark
-      ? 'flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500'
+      ? 'flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 font-mono'
       : 'flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400',
     label: dark
       ? 'grid gap-1.5 text-xs font-semibold text-slate-400'
       : 'grid gap-1.5 text-xs font-semibold text-slate-500',
     labelText: 'px-0.5',
     metaInput,
-    helper: dark ? 'text-xs leading-5 text-slate-500' : 'text-xs leading-5 text-slate-500',
-    divider: dark ? 'h-px bg-white/[0.06]' : 'h-px bg-slate-100',
+    helper: dark ? 'text-xs leading-5 text-slate-500 font-mono' : 'text-xs leading-5 text-slate-500',
+    divider: dark ? 'h-px bg-white/[0.05]' : 'h-px bg-slate-100',
     tagChip: dark
       ? 'rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-slate-300 transition hover:border-white/20 hover:text-slate-100'
       : 'rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900',
     compactRow: 'grid grid-cols-2 gap-2',
     warning: dark
-      ? 'rounded-xl bg-amber-500/10 px-3 py-2 text-xs font-semibold leading-5 text-amber-200 ring-1 ring-amber-300/15'
+      ? 'rounded-xl bg-amber-500/10 px-3 py-2 text-xs font-semibold leading-5 text-amber-300 ring-1 ring-amber-300/15 font-mono'
       : 'rounded-xl bg-amber-50 px-3 py-2 text-xs font-semibold leading-5 text-amber-700 ring-1 ring-amber-200',
     inlineError: dark
-      ? 'rounded-xl bg-rose-500/10 px-3 py-2 text-xs font-semibold leading-5 text-rose-200 ring-1 ring-rose-300/15'
+      ? 'rounded-xl bg-rose-500/10 px-3 py-2 text-xs font-semibold leading-5 text-rose-300 ring-1 ring-rose-300/15 font-mono'
       : 'rounded-xl bg-rose-50 px-3 py-2 text-xs font-semibold leading-5 text-rose-700 ring-1 ring-rose-200',
     preview: dark
-      ? 'rounded-xl bg-slate-950/35 px-3 py-2 text-xs font-medium leading-5 text-blue-200 ring-1 ring-white/[0.06]'
+      ? 'rounded-xl bg-void px-3 py-2 text-xs font-medium leading-5 text-cyan-400 ring-1 ring-white/[0.05] font-mono'
       : 'rounded-xl bg-white px-3 py-2 text-xs font-medium leading-5 text-blue-700 ring-1 ring-blue-100',
-    mutedNote: dark ? 'text-[11px] leading-4 text-slate-500' : 'text-[11px] leading-4 text-slate-500',
+    mutedNote: dark ? 'text-[11px] leading-4 text-slate-600 font-mono' : 'text-[11px] leading-4 text-slate-500',
     footer: dark
-      ? 'flex shrink-0 flex-col gap-2 border-t border-white/[0.06] bg-[#0f172a]/95 px-5 py-4 sm:flex-row-reverse sm:px-6'
+      ? 'flex shrink-0 flex-col gap-2 border-t border-white/[0.05] bg-obsidian px-5 py-4 sm:flex-row-reverse sm:px-6'
       : 'flex shrink-0 flex-col gap-2 border-t border-slate-100 bg-white px-5 py-4 sm:flex-row-reverse sm:px-6',
-    save: 'flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 active:scale-[.99] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto',
+    save: dark
+      ? 'flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-500 px-5 py-3 text-sm font-bold text-void shadow-lg shadow-cyan-500/20 transition hover:bg-cyan-600 active:scale-[.99] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto'
+      : 'flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 active:scale-[.99] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto',
     cancel: dark
       ? 'flex w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-bold text-slate-400 transition hover:bg-white/[0.05] hover:text-slate-100 sm:w-auto'
       : 'flex w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-bold text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 sm:w-auto',

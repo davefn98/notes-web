@@ -33,7 +33,7 @@ export function NotesPanel({
 }: NotesPanelProps) {
   if (loading) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-400">
+      <div className="rounded-xl border border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-400 dark:border-white/[0.05] dark:bg-obsidian/40 dark:backdrop-blur-md dark:text-cyan-400 font-mono">
         Cargando notas...
       </div>
     )
@@ -41,7 +41,7 @@ export function NotesPanel({
 
   if (!notes.length) {
     return (
-      <div className="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-400">
+      <div className="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-400 dark:border-white/[0.05] dark:bg-obsidian/40 dark:backdrop-blur-md dark:text-slate-500 font-mono">
         No hay notas para estos filtros.
       </div>
     )
@@ -65,21 +65,21 @@ export function NotesPanel({
       </div>
 
       {pagination ? (
-        <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-500 shadow-sm">
+        <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-500 shadow-sm dark:bg-obsidian/45 dark:border-white/[0.05] dark:text-slate-400 font-mono">
           <button
             type="button"
             disabled={!pagination.hasPreviousPage}
             onClick={() => onPageChange(pagination.page - 1)}
-            className="rounded-md px-2.5 py-1 font-medium transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-md px-2.5 py-1 font-medium transition hover:bg-slate-100 dark:hover:bg-white/5 dark:hover:text-cyan-400 disabled:cursor-not-allowed disabled:opacity-40"
           >
             ← Anterior
           </button>
-          <span className="text-[11px] text-slate-400">{pagination.page} / {pagination.totalPages || 1}</span>
+          <span className="text-[11px] text-slate-400 dark:text-slate-500">{pagination.page} / {pagination.totalPages || 1}</span>
           <button
             type="button"
             disabled={!pagination.hasNextPage}
             onClick={() => onPageChange(pagination.page + 1)}
-            className="rounded-md px-2.5 py-1 font-medium transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-md px-2.5 py-1 font-medium transition hover:bg-slate-100 dark:hover:bg-white/5 dark:hover:text-cyan-400 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Siguiente →
           </button>

@@ -34,33 +34,33 @@ function barStyles(dark: boolean) {
 
   return {
     bar: `flex items-center gap-1.5 border-b px-3 py-1.5 ${
-      dark ? 'border-white/[0.06] bg-[#0b1120]' : 'border-slate-100 bg-slate-50'
+      dark ? 'border-white/[0.05] bg-void' : 'border-slate-100 bg-slate-50'
     }`,
 
     // Normal pill (select or button)
     pill: `${pillBase} ${
       dark
-        ? 'bg-slate-800/70 text-slate-400 ring-1 ring-slate-700/50 hover:bg-slate-800 hover:text-slate-200'
+        ? 'bg-obsidian text-slate-400 border border-white/[0.05] hover:bg-obsidian-light hover:text-slate-200'
         : 'bg-white text-slate-500 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-700'
     }`,
 
     // Active/selected pill
     pillOn: `${pillBase} ${
       dark
-        ? 'bg-blue-500/15 font-semibold text-blue-300 ring-1 ring-blue-400/30 hover:bg-blue-500/20'
+        ? 'bg-primary/10 font-semibold text-primary border border-primary/20 hover:bg-primary/15'
         : 'bg-blue-50 font-semibold text-blue-600 ring-1 ring-blue-200 hover:bg-blue-100/80'
     }`,
 
     // Icon-only search button (collapsed state)
     iconBtn: `flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition ${
-      dark ? 'text-slate-500 hover:bg-slate-800 hover:text-slate-200' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'
+      dark ? 'text-slate-500 hover:bg-obsidian-light hover:text-slate-200' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'
     }`,
 
     // Search input wrapper
-    searchWrap: `flex h-7 w-44 shrink-0 items-center gap-1 rounded-md px-2 transition ring-1 ${
+    searchWrap: `flex h-7 w-44 shrink-0 items-center gap-1.5 rounded-md px-2 transition border ${
       dark
-        ? 'bg-slate-800/80 ring-slate-700/60 focus-within:ring-2 focus-within:ring-blue-500/40'
-        : 'bg-white ring-slate-200 focus-within:ring-2 focus-within:ring-blue-300/60'
+        ? 'bg-white/[0.02] border-white/[0.05] shadow-[0_0_15px_rgba(0,240,255,0.05)] focus-within:border-primary/50'
+        : 'bg-white border-slate-200 focus-within:ring-2 focus-within:ring-blue-300/60'
     }`,
 
     searchInput: `min-w-0 flex-1 bg-transparent text-xs outline-none ${
@@ -78,7 +78,7 @@ function barStyles(dark: boolean) {
 
     // Clear-all button
     clearBtn: `flex h-7 shrink-0 items-center gap-1 rounded-md px-2 text-xs transition ${
-      dark ? 'text-slate-500 hover:bg-slate-800 hover:text-slate-300' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'
+      dark ? 'text-slate-500 hover:bg-obsidian-light hover:text-slate-300' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'
     }`,
   }
 }
@@ -160,7 +160,11 @@ export function FiltersBar({ filters, onChange }: FiltersBarProps) {
       {/* ── Search ────────────────────────────────────────────────────── */}
       {searchOpen ? (
         <div className={s.searchWrap}>
-          <Search size={12} className={s.searchIcon} />
+          {dark ? (
+            <span className="font-mono text-primary font-bold text-xs select-none">&gt;</span>
+          ) : (
+            <Search size={12} className={s.searchIcon} />
+          )}
           <input
             ref={searchRef}
             autoFocus

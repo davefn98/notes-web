@@ -39,7 +39,7 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (c: string)
           key={c}
           type="button"
           onClick={() => onChange(c)}
-          className={`h-3.5 w-3.5 rounded-full transition ${value === c ? 'ring-2 ring-slate-400 ring-offset-1' : 'opacity-60 hover:opacity-100'}`}
+          className={`h-3.5 w-3.5 rounded-full transition ${value === c ? 'ring-2 ring-slate-400 dark:ring-cyan-400 ring-offset-1 dark:ring-offset-obsidian' : 'opacity-60 hover:opacity-100'}`}
           style={{ backgroundColor: c }}
         />
       ))}
@@ -59,28 +59,28 @@ function InlineForm({
   onCancel: () => void
 }) {
   return (
-    <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-2 shadow-sm">
+    <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-2 shadow-sm dark:bg-obsidian-light dark:border-white/10">
       <input
         autoFocus
         value={name}
         onChange={(e) => onChangeName(e.target.value)}
         onKeyDown={(e) => { if (e.key === 'Enter') onSave(); if (e.key === 'Escape') onCancel() }}
         placeholder={placeholder ?? 'Nombre del grupo'}
-        className="w-full rounded border border-slate-200 px-2 py-1 text-xs outline-none focus:border-blue-500"
+        className="w-full rounded border border-slate-200 px-2 py-1 text-xs outline-none focus:border-blue-500 dark:bg-void dark:border-white/10 dark:focus:border-cyan-400 dark:text-white"
       />
       <ColorPicker value={color} onChange={onChangeColor} />
       <div className="flex gap-1">
         <button
           type="button"
           onClick={onSave}
-          className="rounded bg-blue-600 px-2.5 py-0.5 text-xs font-bold text-white hover:bg-blue-700"
+          className="rounded bg-blue-600 px-2.5 py-0.5 text-xs font-bold text-white hover:bg-blue-700 dark:bg-cyan-500 dark:hover:bg-cyan-600 dark:text-void"
         >
           Guardar
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="rounded border border-slate-200 px-2.5 py-0.5 text-xs text-slate-600 hover:bg-slate-50"
+          className="rounded border border-slate-200 px-2.5 py-0.5 text-xs text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-slate-400 dark:hover:bg-white/5"
         >
           Cancelar
         </button>
@@ -137,7 +137,7 @@ function GroupNode({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onToggleCollapse(group.id) }}
-              className="shrink-0 rounded p-0.5 text-slate-300 hover:text-slate-500"
+              className="shrink-0 rounded p-0.5 text-slate-300 hover:text-slate-500 dark:text-slate-600 dark:hover:text-cyan-400"
             >
               <svg
                 className={`h-3 w-3 transition-transform ${collapsed ? '' : 'rotate-90'}`}
@@ -158,8 +158,8 @@ function GroupNode({
             aria-label={`Seleccionar grupo ${group.name}`}
             className={`flex min-w-0 items-center rounded-md text-left transition ${sidebarCollapsed ? 'h-9 w-9 justify-center px-0 py-0' : 'flex-1 justify-between px-2 py-1'} ${
               selected
-                ? 'bg-blue-50 font-semibold text-blue-700'
-                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                ? 'bg-blue-50 font-semibold text-blue-700 dark:bg-cyan-950/30 dark:text-cyan-400 border-l-2 border-blue-600 dark:border-cyan-400 rounded-l-none'
+                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white'
             }`}
           >
             <span className={`flex min-w-0 items-center ${sidebarCollapsed ? 'justify-center' : 'gap-1.5'}`}>
@@ -172,7 +172,7 @@ function GroupNode({
               </span>}
             </span>
             {!sidebarCollapsed && (
-              <span className={`ml-1.5 shrink-0 text-[10px] ${selected ? 'text-blue-400' : 'text-slate-400'}`}>
+              <span className={`ml-1.5 shrink-0 text-[10px] ${selected ? 'text-blue-400 dark:text-cyan-400/80' : 'text-slate-400'}`}>
                 {noteCount}
               </span>
             )}
@@ -183,7 +183,7 @@ function GroupNode({
               type="button"
               title="Agregar subgrupo"
               onClick={() => onStartCreate(group.id)}
-              className="rounded p-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+              className="rounded p-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-white/5 dark:hover:text-cyan-400"
             >
               <Plus size={12} />
             </button>
@@ -191,7 +191,7 @@ function GroupNode({
               type="button"
               title="Editar"
               onClick={() => onStartEdit(group)}
-              className="rounded p-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+              className="rounded p-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-white/5 dark:hover:text-cyan-400"
             >
               <Pencil size={12} />
             </button>
@@ -199,7 +199,7 @@ function GroupNode({
               type="button"
               title="Eliminar"
               onClick={() => onDelete(group)}
-              className="rounded p-0.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+              className="rounded p-0.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:text-slate-500 dark:hover:bg-rose-950/30 dark:hover:text-rose-400"
             >
               <Trash2 size={12} />
             </button>
@@ -322,17 +322,17 @@ export function Sidebar({ groups, selectedGroupId, ungroupedNotesCount, collapse
   const borderClass = theme === 'dark' ? 'border-white/5' : 'border-slate-200'
 
   return (
-    <aside data-sidebar="true" className={`flex h-full flex-col overflow-hidden border-r ${borderClass} bg-white transition-all duration-200`}>
-      <div className={`flex shrink-0 items-center border-b border-slate-100 py-2 ${collapsed ? 'flex-col justify-center gap-1.5 px-2' : 'gap-2 px-3'}`}>
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-xs font-black text-white shadow-sm">
+    <aside data-sidebar="true" className={`flex h-full flex-col overflow-hidden border-r ${borderClass} bg-white dark:bg-obsidian/95 dark:backdrop-blur-md transition-all duration-200`}>
+      <div className={`flex shrink-0 items-center border-b border-slate-100 dark:border-white/5 py-2 ${collapsed ? 'flex-col justify-center gap-1.5 px-2' : 'gap-2 px-3'}`}>
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-purple-600 text-xs font-black text-white dark:text-void shadow-sm dark:shadow-[0_0_10px_rgba(0,240,255,0.4)]">
           N
         </span>
-        {!collapsed && <span className="text-sm font-bold text-slate-800">Notas</span>}
+        {!collapsed && <span className="text-sm font-bold text-slate-800 dark:text-cyan-400 font-sans tracking-wide">Neural Notes</span>}
         {!collapsed && <div className="flex-1" />}
         <button
           type="button"
           onClick={toggleSidebarCollapsed}
-          className="hidden lg:flex rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+          className="hidden lg:flex rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:text-slate-500 dark:hover:text-cyan-400 dark:hover:bg-white/5"
           aria-label={collapsed ? 'Expandir menú' : 'Colapsar menú'}
           title={collapsed ? 'Expandir menú' : 'Colapsar menú'}
         >
@@ -347,12 +347,12 @@ export function Sidebar({ groups, selectedGroupId, ungroupedNotesCount, collapse
           title="Todas las notas"
           className={`flex items-center rounded-lg text-left text-xs font-medium transition-all ${
             collapsed
-              ? 'h-9 w-9 justify-center px-0 py-0 hover:bg-slate-100'
+              ? 'h-9 w-9 justify-center px-0 py-0 hover:bg-slate-100 dark:hover:bg-white/5'
               : 'w-full gap-2.5 px-2.5 py-2'
           } ${
             selectedGroupId === null
-              ? 'bg-blue-50 font-semibold text-blue-700'
-              : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+              ? 'bg-blue-50 font-semibold text-blue-700 dark:bg-cyan-950/30 dark:text-cyan-400 border-l-2 border-blue-600 dark:border-cyan-400 rounded-l-none'
+              : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white'
           }`}
         >
           <Layout size={collapsed ? 16 : 14} className="shrink-0 opacity-70" />
@@ -360,7 +360,7 @@ export function Sidebar({ groups, selectedGroupId, ungroupedNotesCount, collapse
         </button>
 
         <div className={`mt-1 flex items-center gap-1 pb-px pt-2 ${collapsed ? 'justify-center' : 'justify-between px-2'}`}>
-          {!collapsed && <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+          {!collapsed && <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 font-mono">
             <Folder size={11} />
             Grupos
           </div>}
@@ -368,7 +368,7 @@ export function Sidebar({ groups, selectedGroupId, ungroupedNotesCount, collapse
             type="button"
             title="Nuevo grupo"
             onClick={() => startCreate(null)}
-            className={`rounded text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 ${collapsed ? 'p-1.5' : 'p-0.5'}`}
+            className={`rounded text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-white/5 dark:hover:text-cyan-400 ${collapsed ? 'p-1.5' : 'p-0.5'}`}
             disabled={collapsed}
           >
             <Plus size={12} />
@@ -414,20 +414,20 @@ export function Sidebar({ groups, selectedGroupId, ungroupedNotesCount, collapse
             onClick={() => onSelectGroup(-1)}
             className={`flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs transition-all ${
               selectedGroupId === -1
-                ? 'bg-blue-50 font-semibold text-blue-700'
-                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+                ? 'bg-blue-50 font-semibold text-blue-700 dark:bg-cyan-950/30 dark:text-cyan-400 border-l-2 border-blue-600 dark:border-cyan-400 rounded-l-none'
+                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white'
             }`}
           >
-            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-slate-300" />
+            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-slate-300 dark:bg-white/20" />
             Sin grupo · <span className="font-semibold">{ungroupedNotesCount}</span>
           </button>
         )}
 
-        {!collapsed && tags.length > 0 && (
+        {!collapsed && (
           <>
             <div className="mt-1 flex items-center gap-1.5 px-2 pb-px pt-2">
-              <TagIcon size={11} className="text-slate-400" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Etiquetas</span>
+              <TagIcon size={11} className="text-slate-400 dark:text-slate-500" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 font-mono">Etiquetas</span>
             </div>
             {tags.map((tag) => (
               <div key={tag.id} className="group/tag flex items-center gap-0.5 pr-1" style={{ paddingLeft: '4px' }}>
@@ -441,10 +441,10 @@ export function Sidebar({ groups, selectedGroupId, ungroupedNotesCount, collapse
                         if (e.key === 'Enter') void handleSaveTag(tag.id)
                         if (e.key === 'Escape') { setTagEditingId(null); setTagEditName('') }
                       }}
-                      className="flex-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-50"
+                      className="flex-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-50 dark:bg-void dark:border-white/10 dark:text-white"
                     />
-                    <button type="button" onClick={() => void handleSaveTag(tag.id)} className="rounded-lg bg-blue-600 px-2.5 py-1 text-[10px] font-bold text-white transition hover:bg-blue-700">Guardar</button>
-                    <button type="button" onClick={() => { setTagEditingId(null); setTagEditName('') }} className="rounded-lg px-2 py-1 text-[10px] font-medium text-slate-500 transition hover:bg-slate-50">Cancelar</button>
+                    <button type="button" onClick={() => void handleSaveTag(tag.id)} className="rounded-lg bg-blue-600 px-2.5 py-1 text-[10px] font-bold text-white transition hover:bg-blue-700 dark:bg-cyan-500 dark:text-void dark:hover:bg-cyan-600">Guardar</button>
+                    <button type="button" onClick={() => { setTagEditingId(null); setTagEditName('') }} className="rounded-lg px-2 py-1 text-[10px] font-medium text-slate-500 transition hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-white/5">Cancelar</button>
                   </div>
                 ) : (
                   <>
@@ -453,8 +453,8 @@ export function Sidebar({ groups, selectedGroupId, ungroupedNotesCount, collapse
                       onClick={() => onSelectTag?.(selectedTagId === tag.id ? null : tag.id)}
                       className={`flex min-w-0 flex-1 items-center gap-2 rounded-lg px-2.5 py-1 text-left text-xs transition-all ${
                         selectedTagId === tag.id
-                          ? 'bg-blue-50 font-semibold text-blue-700'
-                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                          ? 'bg-blue-50 font-semibold text-blue-700 dark:bg-cyan-950/30 dark:text-cyan-400 border-l-2 border-blue-600 dark:border-cyan-400 rounded-l-none'
+                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white'
                       }`}
                     >
                       <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: tag.color ?? '#94a3b8' }} />
@@ -465,7 +465,7 @@ export function Sidebar({ groups, selectedGroupId, ungroupedNotesCount, collapse
                         type="button"
                         title="Editar"
                         onClick={() => { setTagEditingId(tag.id); setTagEditName(tag.name) }}
-                        className="rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                        className="rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-white/5 dark:hover:text-white"
                       >
                         <Pencil size={11} />
                       </button>
@@ -473,7 +473,7 @@ export function Sidebar({ groups, selectedGroupId, ungroupedNotesCount, collapse
                         type="button"
                         title="Eliminar"
                         onClick={() => void handleDeleteTag(tag)}
-                        className="rounded-lg p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600"
+                        className="rounded-lg p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:text-slate-500 dark:hover:bg-rose-950/30 dark:hover:text-rose-400"
                       >
                         <Trash2 size={11} />
                       </button>
@@ -485,7 +485,7 @@ export function Sidebar({ groups, selectedGroupId, ungroupedNotesCount, collapse
           </>
         )}
       </nav>
-      <div className={`shrink-0 border-t border-slate-100 px-3 py-2 text-[10px] font-semibold text-slate-400 ${collapsed ? 'text-center' : ''}`}>
+      <div className={`shrink-0 border-t border-slate-100 dark:border-white/5 px-3 py-2 text-[10px] font-semibold text-slate-400 dark:text-slate-600 ${collapsed ? 'text-center' : ''} font-mono`}>
         {collapsed ? `v${__APP_VERSION__}` : `Notas v${__APP_VERSION__} · ${__APP_COMMIT__}`}
       </div>
     </aside>

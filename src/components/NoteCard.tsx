@@ -14,10 +14,17 @@ type NoteCardProps = {
 }
 
 const priorityAccent: Record<NotePriority, { color: string; label: string }> = {
-  low:    { color: '#10b981', label: 'baja' },
-  medium: { color: '#3b82f6', label: 'media' },
-  high:   { color: '#f59e0b', label: 'alta' },
-  urgent: { color: '#ef4444', label: 'urgente' },
+  low:    { color: '#00f0ff', label: 'baja' },
+  medium: { color: '#00bcd4', label: 'media' },
+  high:   { color: '#ebb2ff', label: 'alta' },
+  urgent: { color: '#ffba20', label: 'urgente' },
+}
+
+const priorityGlow: Record<NotePriority, string> = {
+  low:    'dark:hover:shadow-[0_0_20px_rgba(0,240,255,0.12)] dark:hover:border-cyan-400/30',
+  medium: 'dark:hover:shadow-[0_0_20px_rgba(0,188,212,0.12)] dark:hover:border-cyan-500/30',
+  high:   'dark:hover:shadow-[0_0_20px_rgba(235,178,255,0.12)] dark:hover:border-purple-400/30',
+  urgent: 'dark:hover:shadow-[0_0_20px_rgba(255,186,32,0.12)] dark:hover:border-amber-400/30',
 }
 
 function formatDate(value?: string | null) {
@@ -50,6 +57,7 @@ export function NoteCard({ note, groupsById, selected = false, reminderAt = null
   const dueDate = formatDate(note.dueAt)
   const overdue = isPast(note.dueAt) && !completed
   const accent = priorityAccent[note.priority]
+  const glow = priorityGlow[note.priority]
   const reminderStatus = formatReminderStatus(reminderAt)
 
   return (
@@ -57,16 +65,16 @@ export function NoteCard({ note, groupsById, selected = false, reminderAt = null
       data-note-card="true"
       onMouseDown={(event) => event.stopPropagation()}
       onClick={() => onEdit(note)}
-      className={`group/card relative cursor-pointer overflow-hidden rounded-2xl border bg-white p-4 shadow-sm transition-all duration-200 ${
+      className={`group/card relative cursor-pointer overflow-hidden rounded-2xl border bg-white p-4 shadow-sm transition-all duration-200 dark:bg-obsidian/40 dark:backdrop-blur-md ${
         selected
-          ? 'border-blue-300 bg-blue-50/80 shadow-md shadow-blue-100/70 ring-2 ring-blue-100'
+          ? 'border-blue-300 bg-blue-50/80 shadow-md shadow-blue-100/70 ring-2 ring-blue-100 dark:border-cyan-400 dark:bg-cyan-950/20 dark:shadow-[0_0_15px_rgba(0,240,255,0.2)] dark:ring-cyan-500/20'
           : completed
-            ? 'border-slate-200/80 hover:border-slate-300 hover:shadow-md'
-            : 'border-slate-200/80 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md hover:shadow-slate-200/70'
+            ? 'border-slate-200/80 hover:border-slate-300 hover:shadow-md dark:border-white/[0.03] dark:hover:border-white/10 dark:hover:bg-white/5'
+            : `border-slate-200/80 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md hover:shadow-slate-200/70 dark:border-white/[0.05] ${glow}`
       } ${completed ? 'opacity-60' : ''}`}
     >
       <div
-        className="pointer-events-none absolute inset-y-0 left-0 w-[3px] rounded-l-2xl transition-all duration-200"
+        className="pointer-events-none absolute inset-y-0 left-0 w-[4px] rounded-l-2xl transition-all duration-200"
         style={{ backgroundColor: completed ? '#94a3b8' : accent.color }}
       />
 
@@ -77,12 +85,12 @@ export function NoteCard({ note, groupsById, selected = false, reminderAt = null
           aria-label={completed ? 'Marcar pendiente' : 'Marcar hecha'}
           className={`mt-0.5 shrink-0 transition duration-150 ${
             completed
-              ? 'text-slate-400 hover:text-slate-500'
-              : 'text-slate-300 hover:text-blue-500'
+              ? 'text-slate-400 hover:text-slate-500 dark:text-slate-600 dark:hover:text-slate-500'
+              : 'text-slate-300 hover:text-blue-500 dark:text-slate-600 dark:hover:text-cyan-400'
           }`}
         >
           {completed ? (
-            <CheckCircle2 size={18} className="fill-slate-400 text-white" />
+            <CheckCircle2 size={18} className="fill-slate-400 text-white dark:fill-slate-600 dark:text-obsidian" />
           ) : (
             <Circle size={18} />
           )}
@@ -91,7 +99,11 @@ export function NoteCard({ note, groupsById, selected = false, reminderAt = null
         <div className="min-w-0 flex-1">
           <h3
             className={`text-sm font-semibold leading-5 ${
-              completed ? 'line-through text-slate-400' : selected ? 'text-blue-900' : 'text-slate-900'
+              completed
+                ? 'line-through text-slate-400 dark:text-slate-600'
+                : selected
+                  ? 'text-blue-900 dark:text-cyan-300'
+                  : 'text-slate-900 dark:text-white'
             }`}
           >
             <PrivacyText fallback="Nota privada">{note.title}</PrivacyText>
@@ -100,7 +112,7 @@ export function NoteCard({ note, groupsById, selected = false, reminderAt = null
           {note.content && (
             <p
               className={`mt-1.5 line-clamp-3 text-sm leading-6 ${
-                completed ? 'text-slate-400' : 'text-slate-500'
+                completed ? 'text-slate-400 dark:text-slate-600' : 'text-slate-500 dark:text-slate-400'
               }`}
             >
               <PrivacyText fallback="Contenido oculto">{note.content}</PrivacyText>
@@ -112,7 +124,9 @@ export function NoteCard({ note, groupsById, selected = false, reminderAt = null
           {reminderStatus && (
             <span
               className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold ${
-                reminderStatus.due ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600'
+                reminderStatus.due
+                  ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/20 dark:text-rose-400'
+                  : 'bg-amber-50 text-amber-600 dark:bg-amber-950/20 dark:text-amber-400'
               }`}
               title={`Recordatorio: ${formatDate(reminderAt) ?? reminderStatus.label}`}
             >
@@ -124,16 +138,16 @@ export function NoteCard({ note, groupsById, selected = false, reminderAt = null
             type="button"
             onClick={(e) => { e.stopPropagation(); onDelete(note) }}
             aria-label="Eliminar nota"
-            className="rounded-lg p-1.5 text-slate-300 opacity-100 transition-all duration-150 hover:bg-rose-50 hover:text-rose-500 sm:opacity-0 sm:group-hover/card:opacity-100"
+            className="rounded-lg p-1.5 text-slate-300 dark:text-slate-600 opacity-100 transition-all duration-150 hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-950/30 dark:hover:text-rose-400 sm:opacity-0 sm:group-hover/card:opacity-100"
           >
             <Trash2 size={13} />
           </button>
         </div>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-1.5 pl-7">
+      <div className="mt-3 flex flex-wrap items-center gap-1.5 pl-7 font-mono text-[10px]">
         <span
-          className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold tracking-wide"
+          className="inline-flex items-center gap-1 rounded-lg px-2 py-1 font-semibold tracking-wide"
           style={{ backgroundColor: `${accent.color}14`, color: accent.color }}
         >
           <span
@@ -145,7 +159,7 @@ export function NoteCard({ note, groupsById, selected = false, reminderAt = null
 
         {group && (
           <span
-            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium"
+            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 font-medium"
             style={{ backgroundColor: `${group.color ?? '#94a3b8'}18`, color: group.color ?? '#64748b' }}
           >
             <PrivacyText fallback="•••">{group.name}</PrivacyText>
@@ -154,10 +168,10 @@ export function NoteCard({ note, groupsById, selected = false, reminderAt = null
 
         {dueDate && (
           <span
-            className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium ${
+            className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 font-medium ${
               overdue
-                ? 'bg-rose-50 text-rose-600'
-                : 'bg-slate-100 text-slate-500'
+                ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/20 dark:text-rose-400'
+                : 'bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-slate-400'
             }`}
           >
             <Calendar size={11} />
@@ -170,13 +184,13 @@ export function NoteCard({ note, groupsById, selected = false, reminderAt = null
             {note.tags.slice(0, 3).map((tag) => (
               <span
                 key={tag.id}
-                className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-500"
+                className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2 py-1 font-medium text-slate-500 dark:bg-white/5 dark:text-slate-400"
               >
-                {tag.name}
+                #{tag.name}
               </span>
             ))}
             {note.tags.length > 3 && (
-              <span className="rounded-lg bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-400">
+              <span className="rounded-lg bg-slate-100 px-2 py-1 font-medium text-slate-400 dark:bg-white/5 dark:text-slate-500">
                 +{note.tags.length - 3}
               </span>
             )}

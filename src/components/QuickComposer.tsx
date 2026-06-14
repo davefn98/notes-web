@@ -140,38 +140,39 @@ function TagPicker({ tags, selectedIds, onChange, dark, chipClass }: TagPickerPr
 
 function composerStyles(dark: boolean) {
   const chip = dark
-    ? 'h-7 shrink-0 rounded-md border-0 bg-slate-800 px-2 text-xs text-slate-200 outline-none ring-1 ring-slate-700/60 transition focus:ring-2 focus:ring-blue-500/40'
+    ? 'h-7 shrink-0 rounded-md border-0 bg-obsidian px-2 text-xs text-slate-200 outline-none ring-1 ring-white/10 transition focus:ring-2 focus:ring-cyan-500/40 font-mono'
     : 'h-7 shrink-0 rounded-md border-0 bg-slate-100 px-2 text-xs text-slate-700 outline-none ring-1 ring-slate-200 transition focus:ring-2 focus:ring-blue-400/40'
 
   return {
     shell: dark
-      ? 'overflow-hidden rounded-xl border border-white/[0.08] bg-slate-900 shadow-md'
+      ? 'overflow-hidden rounded-xl border border-white/[0.05] bg-obsidian/45 backdrop-blur-md shadow-md'
       : 'overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm',
     trigger: dark
-      ? 'flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-500 transition hover:bg-white/[0.03]'
+      ? 'flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-400 transition hover:bg-white/[0.02] font-mono'
       : 'flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-400 transition hover:bg-slate-50',
     triggerIcon: dark
-      ? 'flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-slate-700 text-slate-500'
-      : 'flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-slate-300 text-slate-400',
+      ? 'flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-dashed border-white/20 text-cyan-400'
+      : 'flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-dashed border-slate-300 text-slate-400',
     body: 'px-4 pt-2.5 pb-3',
     titleInput: dark
-      ? 'w-full border-0 bg-transparent text-[15px] font-semibold text-slate-50 outline-none placeholder:text-slate-500 focus:ring-0'
+      ? 'w-full border-0 bg-transparent text-[15px] font-semibold text-slate-50 outline-none placeholder:text-slate-500 focus:ring-0 font-sans'
       : 'w-full border-0 bg-transparent text-[15px] font-semibold text-slate-900 outline-none placeholder:text-slate-400 focus:ring-0',
-    titleError: dark ? 'mt-0.5 text-xs font-medium text-rose-300' : 'mt-0.5 text-xs font-medium text-rose-600',
+    titleError: dark ? 'mt-0.5 text-xs font-medium text-rose-400' : 'mt-0.5 text-xs font-medium text-rose-600',
     contentInput: dark
-      ? 'w-full resize-none overflow-hidden border-0 bg-transparent text-sm text-slate-300 outline-none placeholder:text-slate-600 focus:ring-0'
+      ? 'w-full resize-none overflow-hidden border-0 bg-transparent text-sm text-slate-300 outline-none placeholder:text-slate-600 focus:ring-0 font-sans'
       : 'w-full resize-none overflow-hidden border-0 bg-transparent text-sm text-slate-600 outline-none placeholder:text-slate-400 focus:ring-0',
-    divider: dark ? 'my-2 border-t border-white/[0.06]' : 'my-2 border-t border-slate-100',
+    divider: dark ? 'my-2 border-t border-white/[0.05]' : 'my-2 border-t border-slate-100',
     row2: 'mt-2 flex flex-wrap items-center gap-1.5',
     chip,
-    saveBtn:
-      'h-7 shrink-0 rounded-md bg-blue-600 px-3 text-xs font-bold text-white shadow-sm shadow-blue-600/20 transition hover:bg-blue-700 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50',
+    saveBtn: dark
+      ? 'h-7 shrink-0 rounded-md bg-cyan-500 hover:bg-cyan-600 px-3 text-xs font-bold text-void shadow-sm shadow-cyan-500/20 transition active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50'
+      : 'h-7 shrink-0 rounded-md bg-blue-600 px-3 text-xs font-bold text-white shadow-sm shadow-blue-600/20 transition hover:bg-blue-700 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50',
     errorBanner: dark
-      ? 'mb-2 rounded-lg bg-rose-500/10 px-2.5 py-1.5 text-xs font-semibold text-rose-200 ring-1 ring-rose-300/15'
+      ? 'mb-2 rounded-lg bg-rose-500/10 px-2.5 py-1.5 text-xs font-semibold text-rose-300 ring-1 ring-rose-300/15'
       : 'mb-2 rounded-lg bg-rose-50 px-2.5 py-1.5 text-xs font-semibold text-rose-700 ring-1 ring-rose-200',
-    preview: dark ? 'mt-1 text-xs font-medium text-blue-300' : 'mt-1 text-xs font-medium text-blue-600',
-    inlineError: dark ? 'mt-1 text-xs font-medium text-rose-300' : 'mt-1 text-xs font-medium text-rose-500',
-    warning: dark ? 'mt-1 text-xs font-medium text-amber-300' : 'mt-1 text-xs font-medium text-amber-600',
+    preview: dark ? 'mt-1 text-xs font-medium text-cyan-400 font-mono' : 'mt-1 text-xs font-medium text-blue-600',
+    inlineError: dark ? 'mt-1 text-xs font-medium text-rose-400' : 'mt-1 text-xs font-medium text-rose-500',
+    warning: dark ? 'mt-1 text-xs font-medium text-amber-400 font-mono' : 'mt-1 text-xs font-medium text-amber-600',
   }
 }
 
@@ -198,6 +199,56 @@ export function QuickComposer({ groups, tags, onSave, onSaveReminder, onSaveRemi
   const titleRef = useRef<HTMLInputElement>(null)
   const contentRef = useRef<HTMLTextAreaElement>(null)
 
+  const [isListening, setIsListening] = useState(false)
+  const recognitionRef = useRef<any>(null)
+
+  function toggleListening() {
+    if (isListening) {
+      recognitionRef.current?.stop()
+      setIsListening(false)
+      return
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      alert('Tu navegador no soporta el reconocimiento de voz de Jarvis.')
+      return
+    }
+
+    const recognition = new SpeechRecognition()
+    recognition.lang = 'es-ES'
+    recognition.continuous = true
+    recognition.interimResults = true
+
+    recognition.onstart = () => {
+      setIsListening(true)
+    }
+
+    recognition.onresult = (event: any) => {
+      let finalTranscript = ''
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript
+        }
+      }
+      if (finalTranscript) {
+        setContent((prev) => prev + (prev ? ' ' : '') + finalTranscript)
+      }
+    }
+
+    recognition.onerror = (event: any) => {
+      console.error('Speech error', event)
+      setIsListening(false)
+    }
+
+    recognition.onend = () => {
+      setIsListening(false)
+    }
+
+    recognitionRef.current = recognition
+    recognition.start()
+  }
+
   useEffect(() => {
     if (!expanded) return
     const t = setTimeout(() => titleRef.current?.focus(), 30)
@@ -215,6 +266,12 @@ export function QuickComposer({ groups, tags, onSave, onSaveReminder, onSaveRemi
   }, [expanded])
 
   function collapse() {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop()
+      } catch (err) {}
+    }
+    setIsListening(false)
     setExpanded(false)
     setTitle('')
     setContent('')
@@ -446,6 +503,32 @@ export function QuickComposer({ groups, tags, onSave, onSaveReminder, onSaveRemi
 
               {/* Spacer pushes save to the right */}
               <span className="flex-1" />
+
+              {/* Voice Waves */}
+              {isListening && (
+                <div className="flex items-center gap-1 h-7 px-2" title="Jarvis escuchando...">
+                  <span className="w-0.5 h-3 bg-cyan-400 rounded-full animate-voice-wave-1" />
+                  <span className="w-0.5 h-2 bg-purple-400 rounded-full animate-voice-wave-2" />
+                  <span className="w-0.5 h-4 bg-cyan-400 rounded-full animate-voice-wave-3" />
+                  <span className="w-0.5 h-2 bg-purple-400 rounded-full animate-voice-wave-4" />
+                  <span className="w-0.5 h-3 bg-cyan-400 rounded-full animate-voice-wave-5" />
+                </div>
+              )}
+
+              {/* AI Jarvis */}
+              <button
+                type="button"
+                onClick={toggleListening}
+                className={`h-7 shrink-0 rounded-md px-3 text-xs font-bold transition flex items-center gap-1.5 ${
+                  isListening
+                    ? 'bg-rose-500 hover:bg-rose-600 text-white animate-pulse'
+                    : 'btn-ai-toggle text-void font-bold dark:text-void'
+                }`}
+                title={isListening ? 'Detener dictado' : 'Hablar con Jarvis'}
+              >
+                <span className={`inline-block h-1.5 w-1.5 rounded-full ${isListening ? 'bg-white' : 'bg-void'}`} />
+                {isListening ? 'Detener' : 'AI Jarvis'}
+              </button>
 
               {/* Save */}
               <button
