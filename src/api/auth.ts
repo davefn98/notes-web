@@ -1,5 +1,5 @@
 import { apiRequest } from './client'
-import type { ChangePasswordPayload, LoginPayload, LoginResponse, RegisterPayload, SessionsResponse, UserResponse } from '../types/auth'
+import type { ChangePasswordPayload, LoginPayload, LoginResponse, RegisterPayload, SessionsResponse, UserResponse, ForgotPasswordPayload, ResetPasswordPayload } from '../types/auth'
 
 export function login(payload: LoginPayload) {
   return apiRequest<LoginResponse>('/auth/login', {
@@ -48,5 +48,21 @@ export function revokeOtherSessions() {
   return apiRequest<void>('/auth/sessions/revoke-others', {
     method: 'POST',
     body: JSON.stringify({}),
+  })
+}
+
+export function forgotPassword(payload: ForgotPasswordPayload) {
+  return apiRequest<{ message: string; resetToken?: string; resetTokenExpiresAt?: string }>('/auth/password/forgot', {
+    auth: false,
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function resetPassword(payload: ResetPasswordPayload) {
+  return apiRequest<{ message: string }>('/auth/password/reset', {
+    auth: false,
+    method: 'POST',
+    body: JSON.stringify(payload),
   })
 }

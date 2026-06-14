@@ -9,8 +9,10 @@ import {
   register as registerRequest,
   revokeOtherSessions as revokeOtherSessionsRequest,
   revokeSession as revokeSessionRequest,
+  forgotPassword as forgotPasswordRequest,
+  resetPassword as resetPasswordRequest,
 } from '../api/auth'
-import type { ChangePasswordPayload, LoginPayload, LoginResponse, RefreshSession, RegisterPayload, User } from '../types/auth'
+import type { ChangePasswordPayload, LoginPayload, LoginResponse, RefreshSession, RegisterPayload, User, ForgotPasswordPayload, ResetPasswordPayload } from '../types/auth'
 
 type AuthState = {
   token: string | null
@@ -31,6 +33,8 @@ type AuthState = {
   login: (payload: LoginPayload) => Promise<void>
   register: (payload: RegisterPayload) => Promise<void>
   logout: () => Promise<void>
+  forgotPassword: (payload: ForgotPasswordPayload) => Promise<{ message: string; resetToken?: string; resetTokenExpiresAt?: string }>
+  resetPassword: (payload: ResetPasswordPayload) => Promise<{ message: string }>
   clearError: () => void
 }
 
@@ -109,6 +113,28 @@ export const useAuthStore = create<AuthState>()(
           await logoutRequest()
         } finally {
           set({ token: null, user: null, sessions: [], refreshTokenExpiresAt: null, error: null, accountError: null, loading: false, accountLoading: false })
+        }
+      },
+      forgotPassword: async (payload) => {
+        set({ loading: true, error: null })
+        try {
+          const data = await forgotPasswordRequest(payload)
+          set({ loading: false })
+          return data
+        } catch (error) {
+          set({ error: error instanceof Error ? error.message : 'No se pudo solicitar la recuperación', loading: false })
+          throw error
+        }
+      },
+      resetPassword: async (payload) => {
+        set({ loading: true, error: null })
+        try {
+          const data = await resetPasswordRequest(payload)
+          set({ loading: false })
+          return data
+        } catch (error) {
+          set({ error: error instanceof Error ? error.message : 'No se pudo restablecer la contraseña', loading: false })
+          throw error
         }
       },
       clearError: () => set({ error: null }),

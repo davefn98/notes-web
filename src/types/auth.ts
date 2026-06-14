@@ -20,6 +20,15 @@ export type RegisterPayload = LoginPayload & {
   email: string
 }
 
+export type ForgotPasswordPayload = {
+  username: string
+}
+
+export type ResetPasswordPayload = {
+  token: string
+  newPassword: string
+}
+
 export type LoginResponse = {
   token: string
   refreshToken?: string
